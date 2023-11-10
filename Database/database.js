@@ -203,6 +203,10 @@ async function insertData(client) {
     console.log('Data inserted');
 }
 
+export function getDBClient() {
+    return DBclient;
+}
+
 setDBClient().then(async res => {
     closeDBClient();
 });
