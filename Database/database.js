@@ -13,25 +13,16 @@ const DB_HOST = 'localhost';
 const PORT = 5432;
 
 const filenames = ['region.csv', 'nation.csv', 'part.csv', 'supplier.csv', 'partsupp.csv', 'customer.csv', 'orders.csv', 'lineitem.csv'];
-const filenameToQuery = {'customer.csv': "INSERT INTO public.customer VALUES %L", 
-'lineitem.csv': "INSERT INTO public.lineitem VALUES %L", 
-'nation.csv': "INSERT INTO public.nation VALUES %L", 
-'orders.csv':"INSERT INTO public.orders VALUES %L", 
-'part.csv': "INSERT INTO public.part VALUES %L", 
-'partsupp.csv': "INSERT INTO public.partsupp VALUES %L", 
-'region.csv': "INSERT INTO public.region VALUES %L", 
-'supplier.csv': "INSERT INTO public.supplier VALUES %L"
-}
 
-const filenameToValuesString = {
-    'customer.csv': ' VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
-    'lineitem.csv': ' VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)',
-    'nation.csv': ' VALUES ($1, $2, $3, $4)',
-    'orders.csv': ' VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)',
-    'part.csv': ' VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)',
-    'partsupp.csv': " VALUES ($1, $2, $3, $4, $5)", 
-    'region.csv': " VALUES ($1, $2, $3)", 
-    'supplier.csv': " VALUES ($1, $2, $3, $4, $5, $6, $7)" 
+const filenameToQuery = {
+    'customer.csv': "INSERT INTO public.customer VALUES %L", 
+    'lineitem.csv': "INSERT INTO public.lineitem VALUES %L", 
+    'nation.csv': "INSERT INTO public.nation VALUES %L", 
+    'orders.csv':"INSERT INTO public.orders VALUES %L", 
+    'part.csv': "INSERT INTO public.part VALUES %L", 
+    'partsupp.csv': "INSERT INTO public.partsupp VALUES %L", 
+    'region.csv': "INSERT INTO public.region VALUES %L", 
+    'supplier.csv': "INSERT INTO public.supplier VALUES %L"
 }
 
 const createRegionTable = 'CREATE TABLE IF NOT EXISTS public.region (r_regionkey integer NOT NULL, r_name character(25) COLLATE pg_catalog."default" NOT NULL, r_comment character varying(152) COLLATE pg_catalog."default", CONSTRAINT region_pkey PRIMARY KEY (r_regionkey)) WITH (OIDS = FALSE) TABLESPACE pg_default';
