@@ -194,6 +194,16 @@ async function insertData(client) {
     console.log('Data inserted');
 }
 
+/**
+ * 
+ * @param query enter the SQL query in string format
+ * @returns the explanation 
+ */
+export async function explainQuery(query) {
+    const explainQuery = `EXPLAIN (ANALYZE true, COSTS true, VERBOSE true, BUFFERS true, TIMING true, FORMAT JSON) ${query}`;
+    return await DBclient.query(explainQuery);
+}
+
 export function getDBClient() {
     return DBclient;
 }
