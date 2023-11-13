@@ -1,6 +1,11 @@
 import psycopg2 as pg
 import csv
 
+class node:
+    def __init__(self):
+        self.details = ''
+        self.children = []
+
 filenames = ['region.csv', 'nation.csv', 'part.csv', 'supplier.csv', 'partsupp.csv', 'customer.csv', 'orders.csv', 'lineitem.csv'];
 relations = []
 
@@ -285,26 +290,26 @@ class Database:
     def generateTree(self, query):
         QEP = self.explainQuery(query)
         QEP = QEP[0][0][0]['Plan']
-        tree = {}
+        root = node()
 
-        def createTree(planArray, prev):
-            for idx, plan in enumerate(planArray):
-                identifier = f'{prev}.{idx}'
+        def createTree(planArray, curr):
+            for plan in planArray:
+                new = node()
                 if 'Plans' in plan:
-                    createTree(plan['Plans'], identifier)
+                    createTree(plan['Plans'], new)
                     del plan['Plans']
-                tree[identifier] = plan
+                new.details = plan
+                curr.children.append(new)
 
-        createTree(QEP['Plans'], '0')
+        createTree(QEP['Plans'], root)
 
         del QEP['Plans']
-        tree[0] = QEP
+        root.details = QEP
 
-        return tree
+        return root
         
 
 
 if __name__ == '__main__':
     db = Database()
-    print(db.generateTree('SELECT * FROM nation WHERE n_name=\'ALGERIA\' GROUP BY n_nationkey ORDER BY n_regionkey'))
     db.closeConnection()
