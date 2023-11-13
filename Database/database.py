@@ -278,14 +278,9 @@ class Database:
             print('No relation named', relation)
             return
         
-        self.cursor.execute(f'SELECT ctid, * FROM {relation}')
-        res = []
+        self.cursor.execute(f'SELECT ctid, * FROM {relation} WHERE (ctid::text::point)[0]={blockNum}')
 
-        for row in self.cursor:
-            if eval(row[0])[0] == blockNum:
-                res.append(row)
-
-        return res
+        return self.cursor.fetchall()
     
     def generateTree(self, query):
         QEP = self.explainQuery(query)
