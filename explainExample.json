@@ -99,3 +99,21 @@
         }
     ]
 }
+
+{
+    '0.0.0.0': {'Node Type': 'Seq Scan', 'Parent Relationship': 'Outer', 'Parallel Aware': False, 'Async Capable': False, 'Relation Name': 'nation', 'Schema': 'public', 'Alias': 'nation', 'Startup Cost': 0.0, 'Total Cost': 12.12, 'Plan Rows': 1, 'Plan Width': 434, 'Actual Startup Time': 0.014, 'Actual Total Time': 0.018, 'Actual Rows': 1, 'Actual Loops': 1, 'Output': ['n_nationkey', 'n_name', 'n_regionkey', 'n_comment'
+        ], 'Filter': "(nation.n_name = 'ALGERIA'::bpchar)", 'Rows Removed by Filter': 24, 'Shared Hit Blocks': 1, 'Shared Read Blocks': 0, 'Shared Dirtied Blocks': 0, 'Shared Written Blocks': 0, 'Local Hit Blocks': 0, 'Local Read Blocks': 0, 'Local Dirtied Blocks': 0, 'Local Written Blocks': 0, 'Temp Read Blocks': 0, 'Temp Written Blocks': 0
+    }, 
+    '0.0.0': {'Node Type': 'Sort', 'Parent Relationship': 'Outer', 'Parallel Aware': False, 'Async Capable': False, 'Startup Cost': 12.13, 'Total Cost': 12.14, 'Plan Rows': 1, 'Plan Width': 434, 'Actual Startup Time': 0.022, 'Actual Total Time': 0.023, 'Actual Rows': 1, 'Actual Loops': 1, 'Output': ['n_nationkey', 'n_name', 'n_regionkey', 'n_comment'
+        ], 'Sort Key': ['nation.n_nationkey'
+        ], 'Sort Method': 'quicksort', 'Sort Space Used': 25, 'Sort Space Type': 'Memory', 'Shared Hit Blocks': 1, 'Shared Read Blocks': 0, 'Shared Dirtied Blocks': 0, 'Shared Written Blocks': 0, 'Local Hit Blocks': 0, 'Local Read Blocks': 0, 'Local Dirtied Blocks': 0, 'Local Written Blocks': 0, 'Temp Read Blocks': 0, 'Temp Written Blocks': 0
+    }, 
+    '0.0': {'Node Type': 'Group', 'Parent Relationship': 'Outer', 'Parallel Aware': False, 'Async Capable': False, 'Startup Cost': 12.13, 'Total Cost': 12.14, 'Plan Rows': 1, 'Plan Width': 434, 'Actual Startup Time': 0.024, 'Actual Total Time': 0.025, 'Actual Rows': 1, 'Actual Loops': 1, 'Output': ['n_nationkey', 'n_name', 'n_regionkey', 'n_comment'
+        ], 'Group Key': ['nation.n_nationkey'
+        ], 'Shared Hit Blocks': 1, 'Shared Read Blocks': 0, 'Shared Dirtied Blocks': 0, 'Shared Written Blocks': 0, 'Local Hit Blocks': 0, 'Local Read Blocks': 0, 'Local Dirtied Blocks': 0, 'Local Written Blocks': 0, 'Temp Read Blocks': 0, 'Temp Written Blocks': 0
+    },
+    0: {'Node Type': 'Sort', 'Parallel Aware': False, 'Async Capable': False, 'Startup Cost': 12.15, 'Total Cost': 12.16, 'Plan Rows': 1, 'Plan Width': 434, 'Actual Startup Time': 0.051, 'Actual Total Time': 0.052, 'Actual Rows': 1, 'Actual Loops': 1, 'Output': ['n_nationkey', 'n_name', 'n_regionkey', 'n_comment'
+        ], 'Sort Key': ['nation.n_regionkey'
+        ], 'Sort Method': 'quicksort', 'Sort Space Used': 25, 'Sort Space Type': 'Memory', 'Shared Hit Blocks': 4, 'Shared Read Blocks': 0, 'Shared Dirtied Blocks': 0, 'Shared Written Blocks': 0, 'Local Hit Blocks': 0, 'Local Read Blocks': 0, 'Local Dirtied Blocks': 0, 'Local Written Blocks': 0, 'Temp Read Blocks': 0, 'Temp Written Blocks': 0
+    }
+}

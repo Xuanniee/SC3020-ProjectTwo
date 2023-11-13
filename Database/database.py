@@ -2,6 +2,7 @@ import psycopg2 as pg
 import csv
 
 filenames = ['region.csv', 'nation.csv', 'part.csv', 'supplier.csv', 'partsupp.csv', 'customer.csv', 'orders.csv', 'lineitem.csv'];
+relations = []
 
 filenameToQuery = {
     'customer.csv': "INSERT INTO public.customer VALUES ", 
@@ -73,11 +74,20 @@ class Database:
                        user = DB_USER,
                        password = DB_PASSWORD)
             
-            self.cursor = self.connection.cursor
+            self.cursor = self.connection.cursor()
             print("Connected")
         except:
             print('TPCH does not exist')
             self.initDB()
+
+        # To get the names of the tables, for generality sake
+        self.cursor.execute('SELECT table_name FROM information_schema.tables WHERE table_schema=\'public\' AND table_type=\'BASE TABLE\'')
+        for tup in self.cursor:
+            relations.append(tup[0])
+
+    def closeConnection(self):
+        self.cursor.close()
+        self.connection.close()
 
     def initDB(self):
         print("Initialising")
@@ -188,12 +198,113 @@ class Database:
         print("Data inserted")
 
     def explainQuery(self, query):
-        return self.cursor.execute(f"EXPLAIN (ANALYZE true, COSTS true, VERBOSE true, BUFFERS true, TIMING true, FORMAT JSON) {query}")
+        """
+        Executes a given query and returns the QEP.
+
+        Parameters:
+            query (str): The query to be executed, the method assumes it is a SELECT query.
+        
+        returns the QEP for the given query
+        """
+
+        self.cursor.execute(f"EXPLAIN (ANALYZE true, COSTS true, VERBOSE true, BUFFERS true, TIMING true, FORMAT JSON) {query}")
+        try:
+            return self.cursor.fetchall()
+        except:
+            return []
+    
+    def query(self, query):
+        """
+        Executes a given query and returns an array of results.
+
+        Parameters:
+            query (str): The query to be executed, the method assumes it is a SELECT query.
+        
+        ctid is appended after the SELECT keyword in the query so the first item of each row will be the tuple ctid
+        """
+
+        temp = query.split(' ')
+        query = temp[0] + ' ctid, ' + ' '.join(temp[1:])
+
+        self.cursor.execute(query)
+        try:
+            return self.cursor.fetchone()
+        except:
+            return []
+        
+    
+    def getAllBlocksByRelation(self, relation):
+        """
+        For a relation, returns all the blocks that the relation occupies in the DB
+
+        Parameters:
+            relation (str): The name of the relation, eg 'nation'
+
+        Returns a set of block numbers
+        """
+        relation = relation.lower()
+
+        if relation not in relations:
+            print('No relation named', relation)
+            return
+
+        self.cursor.execute(f'SELECT ctid FROM {relation}')
+        blocks = set()
+
+        for res in self.cursor:
+            blocks.add(eval(res[0])[0])
+        
+        return blocks
+    
+    def getAllTuplesByBlockNumber(self, relation, blockNum):
+        """
+        Return all the tuples in the given relation that belong to block blockNum
+
+        Parameters:
+            relation (str): The name of the relation, eg 'nation'
+            blockNum (int): The block number
+
+        Returns an array of tuples
+        """
+
+        relation = relation.lower()
+
+        if relation not in relations:
+            print('No relation named', relation)
+            return
+        
+        self.cursor.execute(f'SELECT ctid, * FROM {relation}')
+        res = []
+
+        for row in self.cursor:
+            if eval(row[0])[0] == blockNum:
+                res.append(row)
+
+        return res
+    
+    def generateTree(self, query):
+        QEP = self.explainQuery(query)
+        QEP = QEP[0][0][0]['Plan']
+        tree = {}
+
+        def createTree(planArray, prev):
+            for idx, plan in enumerate(planArray):
+                identifier = f'{prev}.{idx}'
+                if 'Plans' in plan:
+                    createTree(plan['Plans'], identifier)
+                    del plan['Plans']
+                tree[identifier] = plan
+
+        createTree(QEP['Plans'], '0')
+
+        del QEP['Plans']
+        tree[0] = QEP
+
+        return tree
+        
 
 
 if __name__ == '__main__':
-    Database()
-
-
-
-
+    db = Database()
+    print(db.generateTree('SELECT * FROM nation WHERE n_name=\'ALGERIA\' GROUP BY n_nationkey ORDER BY n_regionkey'))
+    db.closeConnection()
