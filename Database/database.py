@@ -238,7 +238,7 @@ class Database:
 
         self.cursor.execute(query)
         try:
-            return self.cursor.fetchone()
+            return self.cursor.fetchall()
         except:
             return []
         
