@@ -1,5 +1,6 @@
 import psycopg2 as pg
 import csv
+import sys
 
 class node:
     def __init__(self):
@@ -82,8 +83,12 @@ class Database:
             self.cursor = self.connection.cursor()
             print("Connected")
         except:
-            print('TPCH does not exist')
-            self.initDB()
+            print(f'{DB_NAME} does not exist')
+            if DB_NAME != 'tpch':
+                print(f'Unknown database, please create database {DB_NAME} and insert all data before trying again')
+                sys.exit()
+            else:
+                self.initDB()
 
         # To get the names of the tables, for generality sake
         self.cursor.execute('SELECT table_name FROM information_schema.tables WHERE table_schema=\'public\' AND table_type=\'BASE TABLE\'')
@@ -111,7 +116,7 @@ class Database:
             cursor.execute(f'CREATE DATABASE {self.DB_NAME}')
             connection.commit()
         except Exception as e:
-            print("EXECPTION", e)
+            print("EXCEPTION", e)
             print("Database TPCH already exists")
         
         cursor.close()
