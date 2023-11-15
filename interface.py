@@ -1,4 +1,5 @@
 import sys
+import math
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import (
@@ -172,9 +173,9 @@ class QEPTreeWindow(QGraphicsView):
         firstIter = True
 
         # Iterate starting from the Root of the Tree
-        for levelStr, nodesList in (parsedQepData.items()):
-            # Get the Current Level as an int
-            level = levelStr.count('0')
+        numLevels = len(parsedQepData)
+        for level in sorted(parsedQepData.keys()):
+            nodesList = parsedQepData[level]
 
             # level represents the level of the tree, e.g. 0.0.0.0 is level 4, while nodes contains information about all nodes in the tree
             if not firstIter:
@@ -183,11 +184,8 @@ class QEPTreeWindow(QGraphicsView):
             else:
                 firstIter = False
 
-            print(nodesList[0]["Node Type"])
-            # TODO Iterate over all the nodes in this level (if there are more than 1
-            # TODO Assume that there will be a list of nodes even when 1
             numNodesOnCurrLevel = len(nodesList)
-
+            # Iterate over all the nodes in this level (if there are more than 1
             for index, node in enumerate(nodesList):
                 if index != 0:
                     # As long as not first iter
@@ -206,24 +204,60 @@ class QEPTreeWindow(QGraphicsView):
                 nodeDesc.setPos(currX, currY)
                 scene.addItem(nodeDesc)
 
+                # Store the Top & Bottom Coordinate of each node
+                currNodeID = node["NodeID"]
+
+                # Curr Node is Key, while value is the Coordinate
+                currTopX = currX + (NODE_WIDTH / 2)
+                currTopY = currY
+                currBotX = currTopX
+                currBotY = currTopY + NODE_HEIGHT
+                # print("Top: ", (currTopX, currTopY))
+                # print("Bot: ", (currBotX, currBotY))
+                self.topDict[currNodeID] = (currTopX, currTopY)
+                self.bottomDict[currNodeID] = (currBotX, currBotY)
+
+
                 # Draw line connecting parent and child nodes
-                if level > 1:
-                    # Parent Coordinates refer to the Bottom Middle of the Rectangle
-                    parentX = currX + (NODE_WIDTH / 2) 
-                    parentY = currY + NODE_HEIGHT
+                # print(level)
+                if level > 0:
+                    # Retrieve Parent Bottom
+                    parentNodeID = node["ParentNodeID"]
+                    # Handle the case when parentNodeID is 0 (root node)
+                    parentX = self.bottomDict[parentNodeID][0]
+                    parentY = self.bottomDict[parentNodeID][1]
 
-                    # TODO Determine the Coordinates of the Child Node
-                    lineItem = QGraphicsLineItem(parentX, parentY, parentX, parentY + NODE_VERTICAL_SPACING)
+                    # Create a QGraphicsLineItem
+                    lineItem = QGraphicsLineItem()
+                    
+                    # Set the line coordinates
+                    lineItem.setLine(parentX, parentY, currTopX, currTopY)
+
+                    # Add the line to the scene
                     scene.addItem(lineItem)
+                    # lineItem = QGraphicsLineItem(parentX, parentY, parentX, parentY + NODE_VERTICAL_SPACING)
+                    # scene.addItem(lineItem)
 
-            if numNodesOnCurrLevel > 1:
+            # Check if a next level exists
+            if level < numLevels - 1:
                 # Determine the Next Node Position on the Next Level
-                # Adjust the position for the next node on the same level
-                currX += (numNodesOnCurrLevel - 1) * (NODE_WIDTH + NODE_HORIZONTAL_SPACING)
-
-            else:
-                # Reset X back to the original spot since only 1 node
-                currX = x
+                nextLevel = sorted(parsedQepData.keys())[sorted(parsedQepData.keys()).index(level) + 1]
+                nodesListNextLevel = parsedQepData[nextLevel]
+                
+                numNodesNextLevel = len(nodesListNextLevel)
+                
+                if numNodesNextLevel > 1:
+                    print("It went in")
+                    # If there is more than one node in the current level, calculate the position
+                    # Determine the Total Distance
+                    totalHoriDistance = (numNodesOnCurrLevel - 1) * (NODE_WIDTH + NODE_HORIZONTAL_SPACING) + NODE_WIDTH
+                    
+                    # Get the Center Position of the Current Node and Travel half the horizontal distance to the left
+                    currX = currBotX - (totalHoriDistance / 2) - (NODE_WIDTH / 2)
+                    
+                else:
+                    # If there is only one node in the current level, reset to the original x-coordinate
+                    currX = x
 
     def retrieveNodeInfo(self, nodeData):
         info = f"Node Type: {nodeData.get('Node Type', 'N/A')}\n"
@@ -256,22 +290,44 @@ class AfterWindow(QWidget):
 Main Script - To be abstracted into a different script subsequently
 """
 if __name__ == "__main__":
-    # TODO Changes made, convert all values to a list of nodes and all keys are strings
+    # qepData = {
+    #     1: [{
+    #         'Node Type': 'Seq Scan', 'Parent Relationship': 'Outer', 'Parallel Aware': False, 'Async Capable': False, 'Relation Name': 'nation', 'Schema': 'public', 
+    #         'Alias': 'nation', 'Startup Cost': 0.0, 'Total Cost': 12.12, 'Plan Rows': 1, 'Plan Width': 434, 'Actual Startup Time': 0.003, 'Actual Total Time': 0.004, 
+    #         'Actual Rows': 0, 'Actual Loops': 1, 'Output': ['n_nationkey', 'n_name', 'n_regionkey', 'n_comment'], 'Filter': "(nation.n_name = 'ALGERIA'::bpchar)", 
+    #         'Rows Removed by Filter': 0, 'Shared Hit Blocks': 0, 'Shared Read Blocks': 0, 'Shared Dirtied Blocks': 0, 'Shared Written Blocks': 0, 'Local Hit Blocks': 0, 
+    #         'Local Read Blocks': 0, 'Local Dirtied Blocks': 0, 'Local Written Blocks': 0, 'Temp Read Blocks': 0, 'Temp Written Blocks': 0, 'NodeID': 1, 'ParentNodeID': 0
+    #     }], 
+    #     0: [{
+    #         'Node Type': 'Sort', 'Parallel Aware': False, 'Async Capable': False, 'Startup Cost': 12.13, 'Total Cost': 12.14, 'Plan Rows': 1, 'Plan Width': 434, 
+    #         'Actual Startup Time': 0.015, 'Actual Total Time': 0.016, 'Actual Rows': 0, 'Actual Loops': 1, 'Output': ['n_nationkey', 'n_name', 'n_regionkey', 'n_comment'], 
+    #         'Sort Key': ['nation.n_nationkey'], 'Sort Method': 'quicksort', 'Sort Space Used': 25, 'Sort Space Type': 'Memory', 'Shared Hit Blocks': 3, 
+    #         'Shared Read Blocks': 0, 'Shared Dirtied Blocks': 0, 'Shared Written Blocks': 0, 'Local Hit Blocks': 0, 'Local Read Blocks': 0, 'Local Dirtied Blocks': 0, 
+    #         'Local Written Blocks': 0, 'Temp Read Blocks': 0, 'Temp Written Blocks': 0, 'NodeID': 0, 'ParentNodeID': None
+    #     }]
+    # }
     qepData = {
-        '0.0.0.0': [{'Node Type': 'Seq Scan', 'Parent Relationship': 'Outer', 'Parallel Aware': False, 'Async Capable': False, 'Relation Name': 'nation', 'Schema': 'public', 'Alias': 'nation', 'Startup Cost': 0.0, 'Total Cost': 12.12, 'Plan Rows': 1, 'Plan Width': 434, 'Actual Startup Time': 0.014, 'Actual Total Time': 0.018, 'Actual Rows': 1, 'Actual Loops': 1, 'Output': ['n_nationkey', 'n_name', 'n_regionkey', 'n_comment'
-            ], 'Filter': "(nation.n_name = 'ALGERIA'::bpchar)", 'Rows Removed by Filter': 24, 'Shared Hit Blocks': 1, 'Shared Read Blocks': 0, 'Shared Dirtied Blocks': 0, 'Shared Written Blocks': 0, 'Local Hit Blocks': 0, 'Local Read Blocks': 0, 'Local Dirtied Blocks': 0, 'Local Written Blocks': 0, 'Temp Read Blocks': 0, 'Temp Written Blocks': 0
+        2: [{
+            'Node Type': 'Sort', 'Parent Relationship': 'Outer', 'Parallel Aware': False, 'Async Capable': False, 'Startup Cost': 12.13, 'Total Cost': 12.14, 'Plan Rows': 1, 
+            'Plan Width': 434, 'Actual Startup Time': 0.022, 'Actual Total Time': 0.023, 'Actual Rows': 1, 'Actual Loops': 1, 'Output': ['n_nationkey', 'n_name', 'n_regionkey', 'n_comment'
+            ], 'Sort Key': ['nation.n_nationkey'], 'Sort Method': 'quicksort', 'Sort Space Used': 25, 'Sort Space Type': 'Memory', 'Shared Hit Blocks': 1, 
+            'Shared Read Blocks': 0, 'Shared Dirtied Blocks': 0, 'Shared Written Blocks': 0, 'Local Hit Blocks': 0, 'Local Read Blocks': 0, 'Local Dirtied Blocks': 0, 
+            'Local Written Blocks': 0, 'Temp Read Blocks': 0, 'Temp Written Blocks': 0,'NodeID': 3, 'ParentNodeID': 2, 
         }], 
-        '0.0.0': [{'Node Type': 'Sort', 'Parent Relationship': 'Outer', 'Parallel Aware': False, 'Async Capable': False, 'Startup Cost': 12.13, 'Total Cost': 12.14, 'Plan Rows': 1, 'Plan Width': 434, 'Actual Startup Time': 0.022, 'Actual Total Time': 0.023, 'Actual Rows': 1, 'Actual Loops': 1, 'Output': ['n_nationkey', 'n_name', 'n_regionkey', 'n_comment'
-            ], 'Sort Key': ['nation.n_nationkey'
-            ], 'Sort Method': 'quicksort', 'Sort Space Used': 25, 'Sort Space Type': 'Memory', 'Shared Hit Blocks': 1, 'Shared Read Blocks': 0, 'Shared Dirtied Blocks': 0, 'Shared Written Blocks': 0, 'Local Hit Blocks': 0, 'Local Read Blocks': 0, 'Local Dirtied Blocks': 0, 'Local Written Blocks': 0, 'Temp Read Blocks': 0, 'Temp Written Blocks': 0
-        }], 
-        '0.0': [{'Node Type': 'Group', 'Parent Relationship': 'Outer', 'Parallel Aware': False, 'Async Capable': False, 'Startup Cost': 12.13, 'Total Cost': 12.14, 'Plan Rows': 1, 'Plan Width': 434, 'Actual Startup Time': 0.024, 'Actual Total Time': 0.025, 'Actual Rows': 1, 'Actual Loops': 1, 'Output': ['n_nationkey', 'n_name', 'n_regionkey', 'n_comment'
-            ], 'Group Key': ['nation.n_nationkey'
-            ], 'Shared Hit Blocks': 1, 'Shared Read Blocks': 0, 'Shared Dirtied Blocks': 0, 'Shared Written Blocks': 0, 'Local Hit Blocks': 0, 'Local Read Blocks': 0, 'Local Dirtied Blocks': 0, 'Local Written Blocks': 0, 'Temp Read Blocks': 0, 'Temp Written Blocks': 0
+        1: [{'Node Type': 'Group', 'Parent Relationship': 'Outer', 'Parallel Aware': False, 'Async Capable': False, 'Startup Cost': 12.13, 'Total Cost': 12.14, 'Plan Rows': 1, 'Plan Width': 434, 'Actual Startup Time': 0.024, 'Actual Total Time': 0.025, 'Actual Rows': 1, 'Actual Loops': 1, 'Output': ['n_nationkey', 'n_name', 'n_regionkey', 'n_comment'
+            ], 'Group Key': ['nation.n_nationkey'], 'Shared Hit Blocks': 1, 'Shared Read Blocks': 0, 'Shared Dirtied Blocks': 0, 'Shared Written Blocks': 0, 
+            'Local Hit Blocks': 0, 'Local Read Blocks': 0, 'Local Dirtied Blocks': 0, 'Local Written Blocks': 0, 'Temp Read Blocks': 0, 'Temp Written Blocks': 0,
+            'NodeID': 4, 'ParentNodeID': 1}, 
+            
+            {'Node Type': 'Seq Scan', 'Parent Relationship': 'Outer', 'Parallel Aware': False, 'Async Capable': False, 'Relation Name': 'nation', 'Schema': 'public', 'Alias': 'nation', 'Startup Cost': 0.0, 'Total Cost': 12.12, 'Plan Rows': 1, 'Plan Width': 434, 'Actual Startup Time': 0.014, 'Actual Total Time': 0.018, 'Actual Rows': 1, 'Actual Loops': 1, 'Output': ['n_nationkey', 'n_name', 'n_regionkey', 'n_comment'
+        ], 'Filter': "(nation.n_name = 'ALGERIA'::bpchar)", 'Rows Removed by Filter': 24, 'Shared Hit Blocks': 1, 'Shared Read Blocks': 0, 'Shared Dirtied Blocks': 0, 
+        'Shared Written Blocks': 0, 'Local Hit Blocks': 0, 'Local Read Blocks': 0, 'Local Dirtied Blocks': 0, 'Local Written Blocks': 0, 'Temp Read Blocks': 0, 
+        'Temp Written Blocks': 0,'NodeID': 2, 'ParentNodeID': 1, 
         }],
-        '0': [{'Node Type': 'Sort', 'Parallel Aware': False, 'Async Capable': False, 'Startup Cost': 12.15, 'Total Cost': 12.16, 'Plan Rows': 1, 'Plan Width': 434, 'Actual Startup Time': 0.051, 'Actual Total Time': 0.052, 'Actual Rows': 1, 'Actual Loops': 1, 'Output': ['n_nationkey', 'n_name', 'n_regionkey', 'n_comment'
-            ], 'Sort Key': ['nation.n_regionkey'
-            ], 'Sort Method': 'quicksort', 'Sort Space Used': 25, 'Sort Space Type': 'Memory', 'Shared Hit Blocks': 4, 'Shared Read Blocks': 0, 'Shared Dirtied Blocks': 0, 'Shared Written Blocks': 0, 'Local Hit Blocks': 0, 'Local Read Blocks': 0, 'Local Dirtied Blocks': 0, 'Local Written Blocks': 0, 'Temp Read Blocks': 0, 'Temp Written Blocks': 0
+        0: [{'Node Type': 'Sort', 'Parallel Aware': False, 'Async Capable': False, 'Startup Cost': 12.15, 'Total Cost': 12.16, 'Plan Rows': 1, 'Plan Width': 434, 'Actual Startup Time': 0.051, 'Actual Total Time': 0.052, 'Actual Rows': 1, 'Actual Loops': 1, 'Output': ['n_nationkey', 'n_name', 'n_regionkey', 'n_comment'
+            ], 'Sort Key': ['nation.n_regionkey'], 'Sort Method': 'quicksort', 'Sort Space Used': 25, 'Sort Space Type': 'Memory', 'Shared Hit Blocks': 4, 
+            'Shared Read Blocks': 0, 'Shared Dirtied Blocks': 0, 'Shared Written Blocks': 0, 'Local Hit Blocks': 0, 'Local Read Blocks': 0, 'Local Dirtied Blocks': 0, 
+            'Local Written Blocks': 0, 'Temp Read Blocks': 0, 'Temp Written Blocks': 0,'NodeID': 1, 'ParentNodeID': None
         }]
     }
 
