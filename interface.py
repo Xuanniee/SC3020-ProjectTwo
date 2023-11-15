@@ -257,7 +257,7 @@ class QEPTreeWindow(QGraphicsView):
                     
                 else:
                     # If there is only one node in the current level, reset to the original x-coordinate
-                    currX = x
+                    currX = currX
 
     def retrieveNodeInfo(self, nodeData):
         info = f"Node Type: {nodeData.get('Node Type', 'N/A')}\n"
