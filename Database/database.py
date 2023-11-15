@@ -316,10 +316,10 @@ class Database:
         if 'Plans' in QEP:
             createTree(QEP['Plans'], 1, 0)
             del QEP['Plans']
-            
+
         QEP['NodeID'] = 0
         QEP['ParentNodeID'] = None
-        tree[0] = QEP
+        tree[0].append(QEP)
 
         return tree
         
