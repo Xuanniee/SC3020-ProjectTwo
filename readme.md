@@ -14,6 +14,9 @@ To start the containers, run `docker compose start`, or start manually from the 
 
 ```
 py --list
+
+Mac
+python --version
 ```
 
 #### Specify a Python version that is 3.8 or higher. If unavailable, install it first then run the following command
