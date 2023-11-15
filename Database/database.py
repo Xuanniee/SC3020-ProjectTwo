@@ -327,5 +327,5 @@ class Database:
 
 if __name__ == '__main__':
     db = Database()
-    print(db.generateTree("SELECT * FROM nation WHERE n_name='ALGERIA'"))
+    print(db.generateTree("SELECT * FROM nation WHERE n_name='ALGERIA' ORDER BY n_nationkey"))
     db.closeConnection()

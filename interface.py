@@ -145,6 +145,10 @@ class QEPTreeWindow(QGraphicsView):
         super(QEPTreeWindow, self).__init__(parent)
         self.parsedQepData = parsedQepData
 
+        # Create a Dictionary to Track Nodes with their Top and Bottom Coordinates
+        self.topDict = {}
+        self.bottomDict = {}
+
         # Set up the QGraphicsScene
         scene = QGraphicsScene(self)
         scene.setSceneRect(0, 0, WINDOW_HEIGHT, WINDOW_WIDTH)
@@ -204,8 +208,11 @@ class QEPTreeWindow(QGraphicsView):
 
                 # Draw line connecting parent and child nodes
                 if level > 1:
+                    # Parent Coordinates refer to the Bottom Middle of the Rectangle
                     parentX = currX + (NODE_WIDTH / 2) 
                     parentY = currY + NODE_HEIGHT
+
+                    # TODO Determine the Coordinates of the Child Node
                     lineItem = QGraphicsLineItem(parentX, parentY, parentX, parentY + NODE_VERTICAL_SPACING)
                     scene.addItem(lineItem)
 
