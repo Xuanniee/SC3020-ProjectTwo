@@ -1,12 +1,8 @@
 import psycopg2 as pg
+from collections import defaultdict
 import csv
 import sys
 import os
-
-class node:
-    def __init__(self):
-        self.details = ''
-        self.children = []
 
 filenames = ['region.csv', 'nation.csv', 'part.csv', 'supplier.csv', 'partsupp.csv', 'customer.csv', 'orders.csv', 'lineitem.csv'];
 relations = []
@@ -212,28 +208,30 @@ class Database:
                         print(e)
         print("Data inserted")
 
-    def explainQuery(self, query):
+    def explainQuery(self, query, data):
         """
         Executes a given query and returns the QEP.
 
         Parameters:
             query (str): The query to be executed, the method assumes it is a SELECT query.
+            data (tuple): tuple of values to be inserted into query
         
         returns the QEP for the given query
         """
 
-        self.cursor.execute(f"EXPLAIN (ANALYZE true, COSTS true, VERBOSE true, BUFFERS true, TIMING true, FORMAT JSON) {query}")
+        self.cursor.execute(f"EXPLAIN (ANALYZE true, COSTS true, VERBOSE true, BUFFERS true, TIMING true, FORMAT JSON) {query}", data)
         try:
             return self.cursor.fetchall()
         except:
             return []
     
-    def query(self, query):
+    def query(self, query, data):
         """
         Executes a given query and returns an array of results.
 
         Parameters:
             query (str): The query to be executed, the method assumes it is a SELECT query.
+            data (tuple): tuple of values to be inserted into query
         
         ctid is appended after the SELECT keyword in the query so the first item of each row will be the tuple ctid
         """
@@ -241,7 +239,7 @@ class Database:
         temp = query.split(' ')
         query = temp[0] + ' ctid, ' + ' '.join(temp[1:])
 
-        self.cursor.execute(query)
+        self.cursor.execute(query, data)
         try:
             return self.cursor.fetchall()
         except:
@@ -292,26 +290,40 @@ class Database:
 
         return self.cursor.fetchall()
     
-    def generateTree(self, query):
-        QEP = self.explainQuery(query)
+    def generateTree(self, query, data):
+        """ 
+        Executes a given query and returns the QEP in the form of a tree dictionary.
+
+        Parameters:
+            query (str): The query to be executed, the method assumes it is a SELECT query.
+            data (tuple): tuple of values to be inserted into query
+        
+        returns the QEP for the given query as a dictionary
+        """
+
+        QEP = self.explainQuery(query, data)
         QEP = QEP[0][0][0]['Plan']
-        root = node()
+        tree = defaultdict(list)
+        ids = [1]
 
-        def createTree(planArray, curr):
-            for plan in planArray:
-                new = node()
+        def createTree(plans, level, parent):
+            for plan in plans:
+                plan['NodeID'] = ids[0]
+                plan['ParentNodeID'] = parent
+                ids[0] += 1
                 if 'Plans' in plan:
-                    createTree(plan['Plans'], new)
+                    createTree(plan['Plans'], level+1, plan['NodeID'])
                     del plan['Plans']
-                new.details = plan
-                curr.children.append(new)
-
-        createTree(QEP['Plans'], root)
+                tree[level].append(plan)
+        
+        createTree(QEP['Plans'], 1, 0)
 
         del QEP['Plans']
-        root.details = QEP
+        QEP['NodeID'] = 0
+        QEP['ParentNodeID'] = None
+        tree[0] = QEP
 
-        return root
+        return tree
         
 
 
