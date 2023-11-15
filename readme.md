@@ -8,6 +8,12 @@ If its the first time setting up, pull the postgres image using `docker compose 
 
 To start the containers, run `docker compose start`, or start manually from the docker dashboard. To stop, run `docker compose stop`, or stop manually from the dashboard.
 
+Once the container is running, the database can be initialised by running database.py.
+
+Alternatively, the Database class can be imported to whicher script it is needed in, and created a Database object will initialise the DB as well.
+
+If it is the first time initialising the DB, the process may take up to 5 minutes due to the large size of the data files.
+
 ### Dev Env Setup
 
 #### List Python versions installed in your system
