@@ -232,6 +232,7 @@ class Database:
             query (str): The query to be executed, the method assumes it is a SELECT query.
         
         ctid is appended after the SELECT keyword in the query so the first item of each row will be the tuple ctid
+        The first item in the array is always the column names of the relation
         """
 
         temp = query.split(' ')
@@ -287,7 +288,7 @@ class Database:
             relation (str[]): An array with the names of the relations, eg ['nation']
             blockNum (int): The block number
 
-        Returns an array of tuples
+        Returns a dictionary of relation: tuple array. The first item in the array is always the column names of the relation
         """
 
         for r in relation:
@@ -296,10 +297,10 @@ class Database:
                 print('No relation named', relation)
                 return
 
-        res = []
+        res = {}
         for r in relation:
             self.cursor.execute(f'SELECT ctid, * FROM {r} WHERE (ctid::text::point)[0]={blockNum}')
-            res += self.cursor.fetchall()
+            res[r] = [[x[0] for x in self.cursor.description]] + self.cursor.fetchall()
 
         return res
     
@@ -347,6 +348,7 @@ class Database:
 
 if __name__ == '__main__':
     db = Database()
-    print(db.query("SELECT * FROM region"))
+    # print(db.query("SELECT * FROM region"))
+    print(db.getAllTuplesByBlockNumber(['nation', 'region'], 0))
     # print(db.generateTree("SELECT * FROM ( SELECT * FROM nation, region WHERE nation.n_regionkey = region.r_regionkey ORDER BY nation.n_nationkey) AS T1, supplier WHERE T1.n_nationkey = supplier.s_nationkey"))
     db.closeConnection()
