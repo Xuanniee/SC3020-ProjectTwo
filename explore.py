@@ -7,7 +7,6 @@ from Database.database import Database
 
 # ==================== Consts ====================
 
-SKIP_NODES = ['Hash', 'Memoize', 'Gather Merge', 'Materialize']
 JSON = Dict[str, Any]
 
 
@@ -30,7 +29,12 @@ def store_query(f: Callable) -> Callable:
         qep: "QEP" = None,
     ) -> str:
         
-        query = f(op)
+        try:
+            query = f(op)
+        except:
+            query = ''
+
+        op['Query'] = query
 
         if qep:
             fname = qep.store(query)
@@ -41,6 +45,12 @@ def store_query(f: Callable) -> Callable:
     return _f
 
 
+def _rand_id() -> str:
+    return '_' + str(int(time.time()*10000000))
+
+
+# ==================== Operator simulation functions ====================
+
 @store_query
 def join(op: "JSON"):
     """Handles join operators
@@ -50,7 +60,7 @@ def join(op: "JSON"):
 
     left = op['Plans'][0]
     right = op['Plans'][1]
-    cols = ','.join(op['Output'])
+    cols = ', '.join(op['Output'])
     join_filter = op.get('Join Filter') 
     qright = f'({right.get("Query")})'
 
@@ -64,18 +74,31 @@ def join(op: "JSON"):
     if not join_filter:
 
         # index scan / index only scan
-        qright = right['Alias']
         join_filter = right.get('Index Cond')
     
-    if not right['Alias']:
+    if not right.get('Alias'):
 
         # for joined intermediate results w/o an alias, manually set one as sql syntax requires
+        _id_right = _rand_id()
+
         for col in right['Output']:
-            _col = '_.' + '.'.join(col.split('.')[1:])
+            _col = f'{_id_right}.' + '.'.join(col.split('.')[1:])
             cols = cols.replace(col,  _col)
             join_filter = join_filter.replace(col, _col)
             
-        right['Alias'] = '_'
+        right['Alias'] = _id_right
+
+    if not left.get('Alias'):
+
+        # for joined intermediate results w/o an alias, manually set one as sql syntax requires
+        _id_left = _rand_id()
+
+        for col in left['Output']:
+            _col = f'{_id_left}.' + '.'.join(col.split('.')[1:])
+            cols = cols.replace(col,  _col)
+            join_filter = join_filter.replace(col, _col)
+            
+        left['Alias'] = _id_left
 
     query = f'''
         SELECT
@@ -89,7 +112,6 @@ def join(op: "JSON"):
         ON
             {join_filter}
     '''
-    op['Query'] = query
     return query
 
 
@@ -101,15 +123,65 @@ def scan(op: "JSON"):
     * Index Scan
     * Index Only Scan"""
 
-    table = op['Relation Name']
     cond = op.get('Filter') or op.get('Index cond')
     cols = ', '.join(op.get('Output', ['*']))
 
-    query = f'SELECT {cols} FROM {table} ' + (f'WHERE {cond}' if cond else '')
-
-    op['Query'] = query
+    query = f'''
+        SELECT {cols} 
+        FROM {op["Relation Name"]} 
+        AS {op["Alias"]}
+    ''' + (f'WHERE {cond}' if cond else '')
     return query
 
+
+@store_query
+def aggregate(op: "JSON"):
+    """Aggregate operators, e.g., SUM(), MIN(), AVG ..."""
+    
+    _id = _rand_id()
+    cols = []
+    grpby = []
+
+    # replace column prefixes with alias
+    for col in op["Output"]:
+        _col = ''
+        parts = col.split('.')
+
+        for part in parts[:-1]:
+            i = len(part)-1
+            while i >= 0 and (part[i].isalnum() or part[i]=='_'):
+                i -= 1
+            _col += part[:i+1] + _id + '.'
+
+        # un-aggregated columns need to be grouped
+        if i == -1:
+            grpby.append(parts[-1])
+        cols.append(_col + parts[-1])
+
+    query = f'''
+        SELECT 
+            {", ".join(cols)} 
+        FROM 
+            (
+                {op["Plans"][0]["Query"]}
+            ) AS {_id}
+        {('GROUP BY' + ', '.join(grpby)) if grpby else ''}
+    '''
+    return query
+
+
+@store_query
+def sort(op: "JSON"):
+    """Sort operator"""
+
+    return op['Plans'][0]['Query'] + f'\nORDER BY\n{", ".join(op["Sort Key"])}'
+
+
+@store_query
+def limit(op: "JSON"):
+    """Limit operator"""
+
+    return op['Plans'][0]['Query'] + f'\nLIMIT {op["Actual Rows"] * op["Actual Loops"]}'
 
 # ==================== Query Execution Plan handler ====================
 
@@ -131,6 +203,10 @@ class QEP:
         self.__db = db
 
 
+    def __enter__(self):
+        return self
+
+
     def resolve(self):
         """Start operator resolve chain"""
 
@@ -141,7 +217,7 @@ class QEP:
         """Run a query and save results in temporary csv file"""
 
         query_out = "COPY ({0}) TO STDOUT WITH CSV HEADER".format(query)
-        fname = f'{time.time()*10000000}.csv'
+        fname = f'{_rand_id()}.csv'
 
         with open(fname, 'w') as f:
             try:
@@ -165,17 +241,31 @@ class QEP:
 
         for child_op in op.get('Plans', []):
             self._resolve_opt(child_op)
-
-        if _type in SKIP_NODES:
-
-            # project child operator's states upwards
-            child = op['Plans'][0]
-            op['Query'] = child['Query']
-            op['Alias'] = child.get('Alias')
             
-        elif _type in ['Nested Loop', 'Hash Join']:
+        if _type in ['Nested Loop', 'Hash Join']:
             join(op, qep=self if self.__save else None)
+        
         elif _type in ['Seq Scan', 'Index Scan', 'Index Only Scan']:
             scan(op, qep=self if self.__save else None)
+
+        elif _type == 'Aggregate' and op['Partial Mode'] != 'Partial':
+            aggregate(op, qep=self if self.__save else None)
+        
         else:
-            logger.debug('Unable to resolve:', _type)
+            # project child operator's states upwards
+            if op.get('Plans'):
+                child = op['Plans'][0]
+                op['Query'] = child['Query']
+                op['Alias'] = child.get('Alias')
+            
+            logger.debug('Project up:', _type)
+
+
+    def __exit__(self, *args):
+        import os
+
+        logger.info('Exiting QEP ...')
+
+        for file in self.__saved:
+            os.remove(file)
+            logger.info(f'Removed: {file}')
