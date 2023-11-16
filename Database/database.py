@@ -236,10 +236,11 @@ class Database:
 
         temp = query.split(' ')
         query = temp[0] + ' ctid, ' + ' '.join(temp[1:])
-
         self.cursor.execute(query)
+
+            
         try:
-            return self.cursor.fetchall()
+            return [x[0] for x in self.cursor.description] +  self.cursor.fetchall()
         except:
             return []
         
@@ -346,6 +347,6 @@ class Database:
 
 if __name__ == '__main__':
     db = Database()
-    # print(db.query("SELECT * FROM region"))
+    print(db.query("SELECT * FROM region"))
     # print(db.generateTree("SELECT * FROM ( SELECT * FROM nation, region WHERE nation.n_regionkey = region.r_regionkey ORDER BY nation.n_nationkey) AS T1, supplier WHERE T1.n_nationkey = supplier.s_nationkey"))
     db.closeConnection()
