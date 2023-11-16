@@ -2,8 +2,9 @@ from explore import db
 
 
 def assert_test(op):
+    print(op['Query']) 
     n = len(db.queryDirect(op['Query']))
-
+    
     ar = op['Actual Rows']
     al = op['Actual Loops']
     
@@ -14,4 +15,4 @@ def assert_test(op):
     print('Query Rows:', n)
     print()
 
-    assert ar*al - n <= al
+    assert abs(ar*al - n) <= al
