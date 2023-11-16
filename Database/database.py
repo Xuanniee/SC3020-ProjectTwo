@@ -1,5 +1,4 @@
 import psycopg2 as pg
-import sqlparse
 from collections import defaultdict
 import csv
 import sys
@@ -298,10 +297,12 @@ class Database:
         returns the QEP for the given query as a dictionary
         """
 
-        QEP = self.explainQuery(query)
-        QEP = QEP[0][0][0]['Plan']
         tree = defaultdict(list)
+        QEP = self.explainQuery(query)
+        additional = QEP[0][0][0]['Planning']
+        QEP = QEP[0][0][0]['Plan']
         ids = [1]
+        ranking = {}
 
         def createTree(plans, level, parent):
             for plan in plans:
@@ -311,6 +312,7 @@ class Database:
                 if 'Plans' in plan:
                     createTree(plan['Plans'], level+1, plan['NodeID'])
                     del plan['Plans']
+                ranking[(plan['Node Type'], plan['NodeID'])] = float(plan['Total Cost'])
                 tree[level].append(plan)
         
         if 'Plans' in QEP:
@@ -321,16 +323,13 @@ class Database:
         QEP['ParentNodeID'] = None
         tree[0].append(QEP)
 
-        return tree
+        additional['Ranking'] = sorted(ranking.items(), key=lambda x: x[1])
+
+        return {'tree': tree, 'additionalInfo': additional}
         
 
 
 if __name__ == '__main__':
     db = Database()
-    # print(db.generateTree("SELECT * FROM ( SELECT * FROM nation, region WHERE nation.n_regionkey = region.r_regionkey ORDER BY nation.n_nationkey) AS T1, supplier WHERE T1.n_nationkey = supplier.s_nationkey"))
+    print(db.generateTree("SELECT * FROM ( SELECT * FROM nation, region WHERE nation.n_regionkey = region.r_regionkey ORDER BY nation.n_nationkey) AS T1, supplier WHERE T1.n_nationkey = supplier.s_nationkey"))
     db.closeConnection()
-
-    # parsed = sqlparse.parse("SELECT * FROM (SELECT a, b, c FROM nation, region WHERE nation.n_regionkey = region.r_regionkey ORDER BY nation.n_nationkey) AS T1, supplier WHERE T1.n_nationkey = supplier.s_nationkey")
-
-    # for tok in parsed[0].tokens:
-    #     print(type(tok))
