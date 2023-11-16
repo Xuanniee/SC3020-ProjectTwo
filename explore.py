@@ -151,7 +151,7 @@ def aggregate(op: "JSON"):
 
         cols.append(_col + parts[-1])
 
-    for key in op['Group Key']:
+    for key in op.get('Group Key', []):
         _key = ''
         parts = key.split('.')
 
