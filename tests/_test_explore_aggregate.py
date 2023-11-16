@@ -2,7 +2,7 @@ from explore import QEP
 from utils import assert_test
 
 
-def _test_aggregate_min():
+def test_aggregate_min():
     op = {
         "Node Type": "Aggregate",
         "Strategy": "Plain",
@@ -395,7 +395,7 @@ def _test_aggregate_min():
     assert_test(op)
 
 
-def _test_aggregate_multi_brackets():
+def test_aggregate_multi_brackets():
     op = {
       "Node Type": "Sort",
       "Parallel Aware": False,
