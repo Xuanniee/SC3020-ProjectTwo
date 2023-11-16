@@ -240,7 +240,7 @@ class Database:
 
             
         try:
-            return [x[0] for x in self.cursor.description] +  self.cursor.fetchall()
+            return [[x[0] for x in self.cursor.description]] +  self.cursor.fetchall()
         except:
             return []
         
