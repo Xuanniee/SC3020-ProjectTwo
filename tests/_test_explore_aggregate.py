@@ -391,8 +391,6 @@ def _test_aggregate_min():
             }
         ]
     }
-    # with QEP(op, save=True) as qep:
-    #    qep.resolve()
     QEP(op).resolve()
     assert_test(op)
 
