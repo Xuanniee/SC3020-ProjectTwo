@@ -285,7 +285,7 @@ class Database:
             self.cursor.execute(f'SELECT ctid, * FROM {r} WHERE (ctid::text::point)[0]={blockNum}')
             res += self.cursor.fetchall()
 
-        return len(res)
+        return res
     
     def generateTree(self, query):
         """ 
@@ -331,5 +331,6 @@ class Database:
 
 if __name__ == '__main__':
     db = Database()
-    print(db.generateTree("SELECT * FROM ( SELECT * FROM nation, region WHERE nation.n_regionkey = region.r_regionkey ORDER BY nation.n_nationkey) AS T1, supplier WHERE T1.n_nationkey = supplier.s_nationkey"))
+    # print(db.query("SELECT * FROM region"))
+    # print(db.generateTree("SELECT * FROM ( SELECT * FROM nation, region WHERE nation.n_regionkey = region.r_regionkey ORDER BY nation.n_nationkey) AS T1, supplier WHERE T1.n_nationkey = supplier.s_nationkey"))
     db.closeConnection()
