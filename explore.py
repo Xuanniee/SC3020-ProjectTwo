@@ -165,7 +165,7 @@ def aggregate(op: "JSON"):
             (
                 {op["Plans"][0]["Query"]}
             ) AS {_id}
-        {('GROUP BY' + ', '.join(grpby)) if grpby else ''}
+        {('GROUP BY ' + ', '.join(grpby)) if grpby else ''}
     '''
     return query
 
