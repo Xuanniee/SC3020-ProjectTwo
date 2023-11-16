@@ -113,11 +113,11 @@ def test_seq_scan_index_only_scan():
             }
         ]
     }
-    QEP(op, save=True).resolve()
+    QEP(op).resolve()
     assert_test(op)
 
 
-def _test_join_filter_seq_scan_seq_scan():
+def test_join_filter_seq_scan_seq_scan():
     op = {
         "Node Type": "Nested Loop",
         "Parallel Aware": False,
