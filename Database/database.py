@@ -244,6 +244,21 @@ class Database:
             return []
         
     
+    def queryDirect(self, query):
+        """
+        Executes a given query without adding ctids and returns an array of results.
+
+        Parameters:
+            query (str): The query to be executed, the method assumes it is a SELECT query.
+        """
+
+        self.cursor.execute(query)
+        try:
+            return self.cursor.fetchall()
+        except:
+            return []
+        
+    
     def getAllBlocksByRelation(self, relation):
         """
         For a relation, returns all the blocks that the relation occupies in the DB
