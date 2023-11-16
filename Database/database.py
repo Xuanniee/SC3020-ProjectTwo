@@ -1,4 +1,5 @@
 import psycopg2 as pg
+import sqlparse
 from collections import defaultdict
 import csv
 import sys
@@ -259,34 +260,33 @@ class Database:
             print('No relation named', relation)
             return
 
-        self.cursor.execute(f'SELECT ctid FROM {relation}')
-        blocks = set()
-
-        for res in self.cursor:
-            blocks.add(eval(res[0])[0])
+        self.cursor.execute(f'SELECT DISTINCT (ctid::text::point)[0] FROM {relation}')
         
-        return blocks
+        return self.cursor.fetchall()
     
     def getAllTuplesByBlockNumber(self, relation, blockNum):
         """
         Return all the tuples in the given relation that belong to block blockNum
 
         Parameters:
-            relation (str): The name of the relation, eg 'nation'
+            relation (str[]): An array with the names of the relations, eg ['nation']
             blockNum (int): The block number
 
         Returns an array of tuples
         """
 
-        relation = relation.lower()
+        for r in relation:
+            r = r.lower()
+            if r not in relations:
+                print('No relation named', relation)
+                return
 
-        if relation not in relations:
-            print('No relation named', relation)
-            return
-        
-        self.cursor.execute(f'SELECT ctid, * FROM {relation} WHERE (ctid::text::point)[0]={blockNum}')
+        res = []
+        for r in relation:
+            self.cursor.execute(f'SELECT ctid, * FROM {r} WHERE (ctid::text::point)[0]={blockNum}')
+            res += self.cursor.fetchall()
 
-        return self.cursor.fetchall()
+        return len(res)
     
     def generateTree(self, query):
         """ 
@@ -327,5 +327,10 @@ class Database:
 
 if __name__ == '__main__':
     db = Database()
-    print(db.generateTree("SELECT * FROM nation WHERE n_name='ALGERIA' ORDER BY n_nationkey"))
+    # print(db.generateTree("SELECT * FROM ( SELECT * FROM nation, region WHERE nation.n_regionkey = region.r_regionkey ORDER BY nation.n_nationkey) AS T1, supplier WHERE T1.n_nationkey = supplier.s_nationkey"))
     db.closeConnection()
+
+    # parsed = sqlparse.parse("SELECT * FROM (SELECT a, b, c FROM nation, region WHERE nation.n_regionkey = region.r_regionkey ORDER BY nation.n_nationkey) AS T1, supplier WHERE T1.n_nationkey = supplier.s_nationkey")
+
+    # for tok in parsed[0].tokens:
+    #     print(type(tok))
