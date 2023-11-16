@@ -29,11 +29,7 @@ def store_query(f: Callable) -> Callable:
         qep: "QEP" = None,
     ) -> str:
         
-        try:
-            query = f(op)
-        except:
-            query = ''
-
+        query = f(op)
         op['Query'] = query
 
         if qep:
@@ -107,7 +103,7 @@ def join(op: "JSON"):
             (
                 {left['Query']}
             ) AS {left['Alias']}
-        {op['Join Type']} JOIN
+        {op['Join Type'] if op['Join Type'] not in ['Semi', 'Cross', 'Self', 'Anti'] else ''} JOIN
             {qright} AS {right['Alias']}
         ON
             {join_filter}
@@ -140,7 +136,7 @@ def aggregate(op: "JSON"):
     
     _id = _rand_id()
     cols = []
-    grpby = []
+    grpkeys = []
 
     # replace column prefixes with alias
     for col in op["Output"]:
@@ -153,11 +149,20 @@ def aggregate(op: "JSON"):
                 i -= 1
             _col += part[:i+1] + _id + '.'
 
-        # un-aggregated columns need to be grouped
-        if i == -1:
-            grpby.append(parts[-1])
         cols.append(_col + parts[-1])
 
+    for key in op['Group Key']:
+        _key = ''
+        parts = key.split('.')
+
+        for part in parts[:-1]:
+            i = len(part)-1
+            while i >= 0 and (part[i].isalnum() or part[i]=='_'):
+                i -= 1
+            _key += part[:i+1] + _id + '.'
+
+        grpkeys.append(_key + parts[-1])
+    
     query = f'''
         SELECT 
             {", ".join(cols)} 
@@ -165,16 +170,29 @@ def aggregate(op: "JSON"):
             (
                 {op["Plans"][0]["Query"]}
             ) AS {_id}
-        {('GROUP BY ' + ', '.join(grpby)) if grpby else ''}
+        {('GROUP BY ' + ', '.join(grpkeys)) if grpkeys else ''}
     '''
     return query
 
 
 @store_query
-def sort(op: "JSON"):
+def sort_table(op: "JSON"):
     """Sort operator"""
 
-    return op['Plans'][0]['Query'] + f'\nORDER BY\n{", ".join(op["Sort Key"])}'
+    # remove sort key table prefixes to avoid clashes with alias
+    keys = []
+    for key in op["Sort Key"]:
+        _key = ''
+        parts = key.split('.')
+
+        for part in parts[:-1]:
+            i = len(part)-1
+            while i >= 0 and (part[i].isalnum() or part[i]=='_'):
+                i -= 1
+            _key += part[:i+1]
+        keys.append(_key + parts[-1])
+
+    return op['Plans'][0]['Query'] + f'\nORDER BY\n{", ".join(keys)}'
 
 
 @store_query
@@ -233,23 +251,35 @@ class QEP:
         return fname
             
 
-    def _resolve_opt(self, op: "JSON"):
+    def _resolve_opt(self, op: "JSON") -> bool:
         """Recursively resolve the intermediate operator query plan"""
 
         _type = op['Node Type']
-        logger.info('Resolving:', _type)
+        failed = False
 
+        logger.info('Resolving:', _type)
+        
         for child_op in op.get('Plans', []):
-            self._resolve_opt(child_op)
+            if not self._resolve_opt(child_op):
+                failed = True
+        if failed:
+            return False
             
+        _qep = self if self.__save else None
         if _type in ['Nested Loop', 'Hash Join']:
-            join(op, qep=self if self.__save else None)
+            join(op, qep=_qep)
         
         elif _type in ['Seq Scan', 'Index Scan', 'Index Only Scan']:
-            scan(op, qep=self if self.__save else None)
+            scan(op, qep=_qep)
 
         elif _type == 'Aggregate' and op['Partial Mode'] != 'Partial':
-            aggregate(op, qep=self if self.__save else None)
+            aggregate(op, qep=_qep)
+
+        elif _type == 'Sort':
+            sort_table(op, qep=_qep)
+
+        elif _type == 'Limit':
+            limit(op, qep=_qep)
         
         else:
             # project child operator's states upwards
@@ -259,7 +289,7 @@ class QEP:
                 op['Alias'] = child.get('Alias')
             
             logger.debug('Project up:', _type)
-
+        return op['Query'] != ''
 
     def __exit__(self, *args):
         import os
