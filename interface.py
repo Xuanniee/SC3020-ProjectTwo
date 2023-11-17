@@ -292,7 +292,7 @@ class CustomNode(QGraphicsRectItem):
         self.nodeData = nodeData
         self.beforeWindowWrapper = beforeWindowWrapper
         # Assume it is a Leaf Node until proven otherwise
-        self.isLeaf = False
+        self.isLeaf = True
         self.setAcceptHoverEvents(True)
         self.db = db
 
@@ -615,7 +615,7 @@ class BeforeWindowWrapper(QWidget):
         layout = QVBoxLayout(self)
         layout.addWidget(self.beforeWindow)
 
-    def updateWindow(self, first, r1Name, relation1, relationOut, r2Name=None, relation2=None):
+    def updateWindow(self, first, r1Name, relation1, relationOut, r2Name=None, relation2=[]):
         # Update the window with the stored data
         self.beforeWindow = BeforeWindow(first, r1Name, relation1, relationOut, self.db ,r2Name, relation2)
         
@@ -626,70 +626,66 @@ class BeforeWindowWrapper(QWidget):
         layout.addWidget(self.beforeWindow)
         
 
-
 class TupleWindow(QWidget):
     """
     This "window" is a QWidget. If it has no parent, it
     will appear as a free-floating window as we want.
     """
-    def __init__(self, relationName, rOut, blockNum, db):
+    def __init__(self, relationName, rOut, blockNum, ctidArr, db):
         super().__init__()
         self.setWindowTitle("TUPLES IN THE BLOCK")
         self.allRelations = relationName
         self.bNo = blockNum
         self._rOut = rOut
+        self.ctid = ctidArr
         self.db = db
         
-        # self.AllRelations = []
+        
+        # create a layout
         layout = QVBoxLayout()
         
-        
-            #get data from the getAllTuplesByBlockNumber() using the database
-            # data = [
-            #     {'First Name': 'John', 'Last Name': 'Doe', 'Age': 25},
-            #     {'First Name': 'Jane', 'Last Name': 'Doe', 'Age': 22},
-            #     {'First Name': 'Alice', 'Last Name': 'Doe', 'Age': 22},
-            #     {'First Name': 'Jane', 'Last Name': 'Lim', 'Age': 24}
-            # ]
         data = DataRetriever(self.db).getTuples(self.allRelations, blockNum)
-            #if that relation doesnt has that block number --> skip
+            
         for i in range(len(self.allRelations)):
             if data[self.allRelations[i]]:
                 df1 = pd.DataFrame(data[self.allRelations[i]])
-                print("df1", df1)
-                df2 = pd.DataFrame(self._rOut)
-                print("df2", df2)
-                merged = pd.merge(df1, df2, how='inner')
-                indices = df1[df1.isin(merged.to_dict('list')).all(axis=1)].index.tolist()
+                # print(df1.head(5))
+                # df2 = pd.DataFrame(self._rOut)
+                # # print(df2.head(5))
+                
+                # merged = pd.merge(df1,df2, how="inner")
+
+                # indices = df1[df1.isin(merged.to_dict('list')).all(axis=1)].index.tolist()
+                indices = []
+                if blockNum in self.ctid.keys():
+                    indices = self.ctid[blockNum]
                 print("indices: ",indices)
 
+                filterLabel = QLabel("Number of Tuples Matched(Red) With Output: "+ str(len(indices)))
+                
                 model = TupleTable(data[self.allRelations[i]], indices)
-                # # set color
-                # model.setRowColor(row, (Qt.GUI.QColor(255, 0, 0, 127) or (0,0,0,127)) 
                 table = QTableView()
                 table.setModel(model)
                 label = QLabel("Relation "+ self.allRelations[i], alignment = Qt.AlignmentFlag.AlignCenter)
                 layout.addWidget(label)
+                layout.addWidget(filterLabel)
                 layout.addWidget(table)
             
         self.setLayout(layout)
 
+
 class TupleTable(QtCore.QAbstractTableModel):
     def __init__(self, data, condition):
-        '''colorArr: index is the row no and value is 1/0'''
         super(TupleTable, self).__init__()
         df = pd.DataFrame(data)
         self._data = df
         self.filterCond = condition
-        '''filterTuples will be a list of tuples in each block for scans but for others it will just be the row number'''
     
     def data(self, index, role):
         if role == Qt.ItemDataRole.DisplayRole:
             value = self._data.iloc[index.row(), index.column()]
             return str(value)
         if role == Qt.ItemDataRole.BackgroundRole:
-            # row = index.row()
-            print(self.filterCond)
             row = index.row()
             if self.filterCond == None:
                 return QtGui.QColor(255, 255, 255)
@@ -705,7 +701,6 @@ class TupleTable(QtCore.QAbstractTableModel):
         return self._data.shape[1]
 
     def headerData(self, section, orientation, role):
-        # section is the index of the column/row.
         if role == Qt.ItemDataRole.DisplayRole:
             if orientation == Qt.Orientation.Horizontal:
                 return str(self._data.columns[section])
@@ -714,18 +709,10 @@ class TupleTable(QtCore.QAbstractTableModel):
                 return str(self._data.index[section])
     
     def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
-        # Update the data in your model
-        # Example: updating the data at the specified index
         if role == Qt.ItemDataRole.EditRole:
             self._data.iloc[index.row()][index.column()] = value
             return True
         return False
-    
-    def setRowColor(self, row, color):
-        self.colors[row] = color
-        # Notify the view that data has changed for the given role
-        self.dataChanged.emit(self.index(row, 0), self.index(row, self.columnCount(None) - 1), [Qt.ItemDataRole.BackgroundRole])
-
 class BlockTable(QtCore.QAbstractTableModel):
     #pandas dataframe
     def __init__(self, data, condition):
@@ -740,8 +727,6 @@ class BlockTable(QtCore.QAbstractTableModel):
             value = self._data.iloc[index.row(), index.column()]
             return str(value)
         if role == Qt.ItemDataRole.BackgroundRole:
-            # row = index.row()
-            print(self.filterCond)
             row = index.row()
             if self.filterCond == None:
                 return QtGui.QColor(255, 255, 255)
@@ -757,7 +742,6 @@ class BlockTable(QtCore.QAbstractTableModel):
         return self._data.shape[1]
 
     def headerData(self, section, orientation, role):
-        # section is the index of the column/row.
         if role == Qt.ItemDataRole.DisplayRole:
             if orientation == Qt.Orientation.Horizontal:
                 return str(self._data.columns[section])
@@ -767,8 +751,6 @@ class BlockTable(QtCore.QAbstractTableModel):
             
     # Method to set data in the model
     def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
-        # Update the data in your model
-        # Example: updating the data at the specified index
         if role == Qt.ItemDataRole.EditRole:
             self._data.iloc[index.row()][index.column()] = value
             return True
@@ -778,7 +760,6 @@ class OutTable(QtCore.QAbstractTableModel):
     #pandas dataframe
     def __init__(self, data):
         super(OutTable, self).__init__()
-        # data = pd.read_csv('')
         df = pd.DataFrame(data)
         self._data = df
 
@@ -786,14 +767,6 @@ class OutTable(QtCore.QAbstractTableModel):
         if role == Qt.ItemDataRole.DisplayRole:
             value = self._data.iloc[index.row(), index.column()]
             return str(value)
-        # if role == Qt.ItemDataRole.BackgroundRole:
-        #     # row = index.row()
-        #     print(self.filterCond)
-        #     row = index.row()
-        #     if self.filterCond and row in self.filterCond:
-        #         return QtGui.QColor(255, 0, 0, 127)
-        #     else:
-        #         return QtGui.QColor(0, 0, 0, 127)
 
     def rowCount(self, index):
         return self._data.shape[0]
@@ -812,8 +785,6 @@ class OutTable(QtCore.QAbstractTableModel):
             
     # Method to set data in the model
     def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
-        # Update the data in your model
-        # Example: updating the data at the specified index
         if role == Qt.ItemDataRole.EditRole:
             self._data.iloc[index.row()][index.column()] = value
             return True
@@ -824,14 +795,35 @@ class BeforeWindow(QMainWindow):
     def __init__(self, first, r1Name, relation1, relationOut, database, r2Name=None, relation2=[]):
         super().__init__()
         '''first: boolean'''
-        self.db = database
         self.w = None  # No external window yet.
         self.firstOp = first
         self.data1 = relation1
-        self._rOut = relationOut
+        self.db = database
+
+        self.ctidArr = {}
+        if relationOut.columns[0] == "ctid":
+            # print(outData["ctid"])
+            for item in relationOut["ctid"]:
+                # print(item[1:-1])
+                block_no, tuple_ind = item[1:-1].split(",")
+                block_no = int(block_no)
+                tuple_ind = int(tuple_ind)-1
+                # Check if blockNo already exists in the dictionary
+                if block_no in self.ctidArr:
+                    # Append tupleInd if it's not already in the list
+                    if tuple_ind not in self.ctidArr[block_no]:
+                        self.ctidArr[block_no].append(tuple_ind)
+                else:
+                    # Create a new list with the tupleInd
+                    self.ctidArr[block_no] = [tuple_ind]
+            # print(arr)
+            self._rOut = relationOut.drop(columns=relationOut.columns[0])
+        else:
+            self._rOut = relationOut    
         
         self.r1Relations = r1Name
         self.r2Relations = r2Name
+
         if r1Name and len(r1Name) != 0:
             self._r1Name = r1Name[0]
             i=1
@@ -846,48 +838,52 @@ class BeforeWindow(QMainWindow):
         table1Label = QLabel("Relation " + self._r1Name, alignment = Qt.AlignmentFlag.AlignCenter)
         outLabel = QLabel("Generated Output" , alignment = Qt.AlignmentFlag.AlignCenter)
 
-        self.table1 = QTableView()
 
-        self.outName = self._r1Name 
-        
+        #layout
+        layout = QGridLayout()
+        layout.addWidget(title, 0, 0, 1, 2)
+
+
+        #create table view for table 1, 2 and out
+        self.table1 = QTableView()        
         self.outTable = QTableView()
 
+        #filtering 
         if not self.firstOp:
             df1 = pd.DataFrame(self.data1)
             df2 = pd.DataFrame(self._rOut)
             merged = pd.merge(df1, df2, how='inner')
             indices = df1[df1.isin(merged.to_dict('list')).all(axis=1)].index.tolist()
-            print("indices: ",indices)
+            filterLabel1 = QLabel("Number of Tuples Matched(Red) with Output: " + str(len(indices)))
+            
         else:
             indices = None
+            filterLabel1 = QLabel("Number of Blocks: " + str(len(self.data1)))
+        
 
-        #create table for relation 1
+        #insert data into table 1
         self.model1 = BlockTable(self.data1, indices)
         self.table1.setModel(self.model1)
         
         # Add event bindings for row click
-        if self.firstOp:
+        if self.firstOp: #allow to click for block format
             self.table1.clicked.connect(self.show_new_window1)
 
-        #create table for output 
+        #insert into layout
+        layout.addWidget(table1Label, 1, 0)
+        layout.addWidget(filterLabel1, 2, 0)
+        layout.addWidget(self.table1, 3, 0)
+
+
+        #insert data into table output 
         self.modelOut = OutTable(self._rOut)
         self.outTable.setModel(self.modelOut)
+        layout.addWidget(outLabel, 1, 1)
+        resLabel = QLabel("Number of Tuples Generated: " + str(len(self._rOut)))
+        layout.addWidget(resLabel, 2, 1)
 
-
-        
-        
-        #layout
-        layout = QGridLayout()
-        layout.addWidget(title, 0, 0, 1, 2)
-        layout.addWidget(table1Label, 1, 0)
-        layout.addWidget(self.table1, 2, 0)
-        
-
-        central_widget = QWidget()
-        central_widget.setLayout(layout)
-        self.setCentralWidget(central_widget)
-
-        if r2Name or (not relation2.empty):
+        #if relation 2 exist
+        if r2Name or (len(relation2) >0):
             self.data2 = relation2
             self.table2 = QTableView()
             if r2Name:
@@ -901,32 +897,49 @@ class BeforeWindow(QMainWindow):
                 self._r2Name = "B"
 
             table2Label = QLabel("Relation "+ self._r2Name)
-            self.model2 = BlockTable(self.data2, None)
+            if not self.firstOp:
+                df1 = pd.DataFrame(self.data2)
+                df2 = pd.DataFrame(self._rOut)
+                merged = pd.merge(df1, df2, how='inner')
+                indices = df1[df1.isin(merged.to_dict('list')).all(axis=1)].index.tolist()
+                filterLabel2 = QLabel("Number of Tuples Matched(Red) with Output: " + str(len(indices)))
+                # print("indices: ",indices)
+            else:
+                indices = None
+            
+            
+            self.model2 = BlockTable(self.data2, indices)
             self.table2.setModel(self.model2)
             table2Label = QLabel("Relation " + self._r2Name, alignment = Qt.AlignmentFlag.AlignCenter)
-            layout.addWidget(table2Label, 3, 0)
-            layout.addWidget(self.table2, 4, 0)
+            layout.addWidget(table2Label, 4, 0)
+            layout.addWidget(filterLabel2, 5, 0)
+            layout.addWidget(self.table2, 6, 0)
 
             # Add event bindings for row click
-            self.table2.clicked.connect(self.show_new_window2)
-
-            layout.addWidget(outLabel, 1, 1)
-            layout.addWidget(self.outTable, 2, 1, 3, 1)
+            if self.firstOp:
+                self.table2.clicked.connect(self.show_new_window2)
+            
+            layout.addWidget(self.outTable, 3, 1, 4, 1)
             
         else:
             self.model2 = None
             self.table2 = None
-            layout.addWidget(outLabel, 1, 1)
-            layout.addWidget(self.outTable, 2, 1)
+            
+            layout.addWidget(self.outTable, 3, 1)
 
 
+        central_widget = QWidget()
+        central_widget.setLayout(layout)
+        self.setCentralWidget(central_widget)
+    
+    
     def show_new_window1(self, index: QModelIndex):
         if self.w is None:
             if index.isValid():
             # Get the row and column index from the clicked QModelIndex
                 row = index.row()
-                print("blk", row)
-                self.w = TupleWindow(self.r1Relations, self._rOut, row, self.db)
+                print("blk", row, "clicked")
+                self.w = TupleWindow(self.r1Relations, self._rOut, row, self.ctidArr, self.db)
                 self.w.show()
 
         else:
@@ -938,13 +951,13 @@ class BeforeWindow(QMainWindow):
             if index.isValid():
             # Get the row and column index from the clicked QModelIndex
                 row = index.row()
-                self.w = TupleWindow(self.r2Relations, self._rOut, row, self.db)
+                print("blk", row, "clicked")
+                self.w = TupleWindow(self.r2Relations, self._rOut, row, None, self.db)
                 self.w.show()
 
         else:
             self.w.close()  # Close window.
             self.w = None  # Discard reference.
-
 
 class DataRetriever():
     def __init__(self, database):
@@ -952,11 +965,8 @@ class DataRetriever():
         
     def getBlockNumber(self, relationName):
         '''
-        relationName : (list of strings) 
-        '''
-        print("RIGHT HERE: ", relationName[0])
+        relationName : (list of strings) '''
         data = self.database.getAllBlocksByRelation(relationName[0])
-        print(data)
         maxBlk = max([int(t[0]) for t in data])
         if len(relationName) > 1:
             for i in range(1, len(relationName)):
@@ -977,15 +987,13 @@ class DataRetriever():
                 processed_data = []
                 for entry in data[relation[i]][1:]:
                     processed_data.append(dict(zip(headers, entry[1:])))
-
-                # print("processed:", relation[i], processed_data)
                 indRelations[relation[i]] = processed_data
         return indRelations
     
     def getInterData(self, filename):
         #read in csv
         outData = pd.read_csv(filename)
-        return outData
+        return outData    
 
 """
 Window 4 - Display the After of Data Block Visualisations
