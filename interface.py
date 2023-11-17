@@ -1,6 +1,8 @@
 import sys
 import json
 import pandas as pd
+import numpy as np
+from collections import defaultdict
 from PyQt6 import QtCore, QtGui
 from PyQt6.QtCore import Qt, QModelIndex
 from PyQt6.QtWidgets import (
@@ -40,7 +42,7 @@ SQL_WINDOW_HEIGHT = 600
 WINDOW_WIDTH = 1980
 WINDOW_HEIGHT = 1800
 
-
+childrenRelation = defaultdict(list)
 """
 Main Application Window
 """
@@ -96,8 +98,8 @@ class QueryWindowGUI(QMainWindow):
         # Set the Various Windows required
         centralAppLayout.addWidget(window1, 1, 0)
         centralAppLayout.addWidget(window2, 1, 1)
-        centralAppLayout.addWidget(BeforeWindow(False,  ["orders"], DataRetriever().getInterData('_17001997288923678.csv'), DataRetriever().getInterData('_17001998061102650.csv')), 1, 2)
-        centralAppLayout.addWidget(BeforeWindow(False,  ["orders"], DataRetriever().getInterData('_17001997288923678.csv'), DataRetriever().getInterData('_17001998061102650.csv')), 1, 2)
+        # centralAppLayout.addWidget(BeforeWindow(False,  ["orders"], DataRetriever().getInterData('_17001997288923678.csv'), DataRetriever().getInterData('_17001998061102650.csv')), 1, 2)
+        # centralAppLayout.addWidget(BeforeWindow(False,  ["orders"], DataRetriever().getInterData('_17001997288923678.csv'), DataRetriever().getInterData('_17001998061102650.csv')), 1, 2)
 
         scrollArea = QScrollArea()
         scrollArea.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -157,11 +159,25 @@ class SQLQueryWindow(QWidget):
         QEPExecutor.cleanup()
         
         parsedQepData = qepData.get("tree", "N/A")
-
+        
         # Check if parsedData is None
         if parsedQepData is "N/A":
             # TODO Print no tree printed on the screen somehow
             print("No tree should be printed")
+
+        for level in sorted(parsedQepData.keys(), reverse=True):
+            for node in parsedQepData[level]:
+                if node.get('Relation Name', None):
+                    childrenRelation[node['ParentNodeID']].append(node.get('Relation Name'))
+                elif childrenRelation[node['NodeID']]:
+                    temp = childrenRelation[node['NodeID']][0] if len(childrenRelation[node['NodeID']]) == 1 else childrenRelation[node['NodeID']]
+                    if len(childrenRelation[node['ParentNodeID']]) != 0:
+                        childrenRelation[node['ParentNodeID']].append(temp)
+                    else:
+                        childrenRelation[node['ParentNodeID']] = temp
+                else:
+                    print('error')
+
 
         # Update the Window's content
         self.qepTreeWindow.updateContent(parsedQepData)
