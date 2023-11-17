@@ -336,13 +336,15 @@ class CustomNode(QGraphicsRectItem):
             outRelation = files[0]
 
         # Call the Update Function, thereby passing
-        if isJoin:
+        print(firstOperator)
+        if firstOperator:
+            relationName = self.nodeData["Relation Name"]
+            print([relationName])
+            self.beforeWindowWrapper.updateWindow(firstOperator, r1Name=None, relation1=DataRetriever(self.db).getBlockNumber(relationName=[relationName]), r2Name=None, relation2=DataRetriever(self.db).getInterData(files[1]), relationOut=DataRetriever(self.db).getInterData(outRelation))
+        elif isJoin:
             self.beforeWindowWrapper.updateWindow(firstOperator, r1Name=None, relation1=DataRetriever(self.db).getInterData(files[0]), r2Name=None, relation2=DataRetriever(self.db).getInterData(files[1]), relationOut=DataRetriever(self.db).getInterData(outRelation))
         else:
             self.beforeWindowWrapper.updateWindow(firstOperator, r1Name=None, relation1=DataRetriever(self.db).getInterData(files[0]), relationOut=DataRetriever(self.db).getInterData(outRelation))
-        
-
-        # self.beforeWindowWrapper.updateWindow(False, r1Name=["orders"], relation1=DataRetriever(self.db).getInterData('_17001997288923678.csv'), relationOut=DataRetriever(self.db).getInterData('_17001998061102650.csv'))
         
         # Display a pop-up window when the user clicks on the rectangle
         node_info_dialog = NodeInfoDialog(self.nodeData, self.isLeaf, self.beforeWindowWrapper)
@@ -630,12 +632,13 @@ class TupleWindow(QWidget):
     This "window" is a QWidget. If it has no parent, it
     will appear as a free-floating window as we want.
     """
-    def __init__(self, relationName, rOut, blockNum):
+    def __init__(self, relationName, rOut, blockNum, db):
         super().__init__()
         self.setWindowTitle("TUPLES IN THE BLOCK")
         self.allRelations = relationName
         self.bNo = blockNum
         self._rOut = rOut
+        self.db = db
         
         # self.AllRelations = []
         layout = QVBoxLayout()
@@ -648,7 +651,7 @@ class TupleWindow(QWidget):
             #     {'First Name': 'Alice', 'Last Name': 'Doe', 'Age': 22},
             #     {'First Name': 'Jane', 'Last Name': 'Lim', 'Age': 24}
             # ]
-        data = DataRetriever().getTuples(self.allRelations, blockNum)
+        data = DataRetriever(self.db).getTuples(self.allRelations, blockNum)
             #if that relation doesnt has that block number --> skip
         for i in range(len(self.allRelations)):
             if data[self.allRelations[i]]:
@@ -916,7 +919,7 @@ class BeforeWindow(QMainWindow):
             # Get the row and column index from the clicked QModelIndex
                 row = index.row()
                 print("blk", row)
-                self.w = TupleWindow(self.r1Relations, self._rOut, row)
+                self.w = TupleWindow(self.r1Relations, self._rOut, row, self.db)
                 self.w.show()
 
         else:
@@ -942,8 +945,11 @@ class DataRetriever():
         
     def getBlockNumber(self, relationName):
         '''
-        relationName : (list of strings) '''
+        relationName : (list of strings) 
+        '''
+        print("RIGHT HERE: ", relationName[0])
         data = self.database.getAllBlocksByRelation(relationName[0])
+        print(data)
         maxBlk = max([int(t[0]) for t in data])
         if len(relationName) > 1:
             for i in range(1, len(relationName)):

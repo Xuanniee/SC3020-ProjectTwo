@@ -1,312 +1,31 @@
 {
     "tree": {
-        "1": [
-            {
-                "Node Type": "Seq Scan",
-                "Parent Relationship": "Outer",
-                "Parallel Aware": false,
-                "Async Capable": false,
-                "Relation Name": "supplier",
-                "Schema": "public",
-                "Alias": "supplier",
-                "Startup Cost": 0.0,
-                "Total Cost": 11.5,
-                "Plan Rows": 150,
-                "Plan Width": 512,
-                "Actual Startup Time": 0.006,
-                "Actual Total Time": 0.006,
-                "Actual Rows": 0,
-                "Actual Loops": 1,
-                "Output": [
-                    "supplier.s_suppkey",
-                    "supplier.s_name",
-                    "supplier.s_address",
-                    "supplier.s_nationkey",
-                    "supplier.s_phone",
-                    "supplier.s_acctbal",
-                    "supplier.s_comment"
-                ],
-                "Shared Hit Blocks": 0,
-                "Shared Read Blocks": 0,
-                "Shared Dirtied Blocks": 0,
-                "Shared Written Blocks": 0,
-                "Local Hit Blocks": 0,
-                "Local Read Blocks": 0,
-                "Local Dirtied Blocks": 0,
-                "Local Written Blocks": 0,
-                "Temp Read Blocks": 0,
-                "Temp Written Blocks": 0,
-                "Query": "\n        SELECT supplier.s_suppkey, supplier.s_name, supplier.s_address, supplier.s_nationkey, supplier.s_phone, supplier.s_acctbal, supplier.s_comment \n        FROM supplier \n        AS supplier\n    ",
-                "Filename": "_17002282187107520.csv",
-                "NodeID": 1,
-                "ParentNodeID": 0
-            },
-            {
-                "Node Type": "Hash",
-                "Parent Relationship": "Inner",
-                "Parallel Aware": false,
-                "Async Capable": false,
-                "Startup Cost": 32.71,
-                "Total Cost": 32.71,
-                "Plan Rows": 170,
-                "Plan Width": 864,
-                "Actual Startup Time": 0.0,
-                "Actual Total Time": 0.0,
-                "Actual Rows": 0,
-                "Actual Loops": 0,
-                "Output": [
-                    "nation.n_nationkey",
-                    "nation.n_name",
-                    "nation.n_regionkey",
-                    "nation.n_comment",
-                    "region.r_regionkey",
-                    "region.r_name",
-                    "region.r_comment"
-                ],
-                "Shared Hit Blocks": 0,
-                "Shared Read Blocks": 0,
-                "Shared Dirtied Blocks": 0,
-                "Shared Written Blocks": 0,
-                "Local Hit Blocks": 0,
-                "Local Read Blocks": 0,
-                "Local Dirtied Blocks": 0,
-                "Local Written Blocks": 0,
-                "Temp Read Blocks": 0,
-                "Temp Written Blocks": 0,
-                "Query": "\n        SELECT\n            nation.n_nationkey, nation.n_name, nation.n_regionkey, nation.n_comment, region.r_regionkey, region.r_name, region.r_comment\n        FROM \n            (\n                \n        SELECT nation.n_nationkey, nation.n_name, nation.n_regionkey, nation.n_comment \n        FROM nation \n        AS nation\n    \n            ) AS nation\n    Inner JOIN\n(\n        SELECT region.r_regionkey, region.r_name, region.r_comment \n        FROM region \n        AS region\n    ) AS region\nON (nation.n_regionkey = region.r_regionkey)\n\nORDER BY\nn_nationkey",
-                "Alias": "_17002282187269840",
-                "Index Cond": null,
-                "NodeID": 2,
-                "ParentNodeID": 0
-            }
-        ],
-        "4": [
-            {
-                "Node Type": "Seq Scan",
-                "Parent Relationship": "Outer",
-                "Parallel Aware": false,
-                "Async Capable": false,
-                "Relation Name": "nation",
-                "Schema": "public",
-                "Alias": "nation",
-                "Startup Cost": 0.0,
-                "Total Cost": 11.7,
-                "Plan Rows": 170,
-                "Plan Width": 434,
-                "Actual Startup Time": 0.0,
-                "Actual Total Time": 0.0,
-                "Actual Rows": 0,
-                "Actual Loops": 0,
-                "Output": [
-                    "nation.n_nationkey",
-                    "nation.n_name",
-                    "nation.n_regionkey",
-                    "nation.n_comment"
-                ],
-                "Shared Hit Blocks": 0,
-                "Shared Read Blocks": 0,
-                "Shared Dirtied Blocks": 0,
-                "Shared Written Blocks": 0,
-                "Local Hit Blocks": 0,
-                "Local Read Blocks": 0,
-                "Local Dirtied Blocks": 0,
-                "Local Written Blocks": 0,
-                "Temp Read Blocks": 0,
-                "Temp Written Blocks": 0,
-                "Query": "\n        SELECT nation.n_nationkey, nation.n_name, nation.n_regionkey, nation.n_comment \n        FROM nation \n        AS nation\n    ",
-                "Filename": "_17002282187141900.csv",
-                "NodeID": 5,
-                "ParentNodeID": 4
-            },
-            {
-                "Node Type": "Hash",
-                "Parent Relationship": "Inner",
-                "Parallel Aware": false,
-                "Async Capable": false,
-                "Startup Cost": 11.7,
-                "Total Cost": 11.7,
-                "Plan Rows": 170,
-                "Plan Width": 430,
-                "Actual Startup Time": 0.0,
-                "Actual Total Time": 0.0,
-                "Actual Rows": 0,
-                "Actual Loops": 0,
-                "Output": [
-                    "region.r_regionkey",
-                    "region.r_name",
-                    "region.r_comment"
-                ],
-                "Shared Hit Blocks": 0,
-                "Shared Read Blocks": 0,
-                "Shared Dirtied Blocks": 0,
-                "Shared Written Blocks": 0,
-                "Local Hit Blocks": 0,
-                "Local Read Blocks": 0,
-                "Local Dirtied Blocks": 0,
-                "Local Written Blocks": 0,
-                "Temp Read Blocks": 0,
-                "Temp Written Blocks": 0,
-                "Query": "\n        SELECT region.r_regionkey, region.r_name, region.r_comment \n        FROM region \n        AS region\n    ",
-                "Alias": "region",
-                "Index Cond": null,
-                "NodeID": 6,
-                "ParentNodeID": 4
-            }
-        ],
-        "5": [
-            {
-                "Node Type": "Seq Scan",
-                "Parent Relationship": "Outer",
-                "Parallel Aware": false,
-                "Async Capable": false,
-                "Relation Name": "region",
-                "Schema": "public",
-                "Alias": "region",
-                "Startup Cost": 0.0,
-                "Total Cost": 11.7,
-                "Plan Rows": 170,
-                "Plan Width": 430,
-                "Actual Startup Time": 0.0,
-                "Actual Total Time": 0.0,
-                "Actual Rows": 0,
-                "Actual Loops": 0,
-                "Output": [
-                    "region.r_regionkey",
-                    "region.r_name",
-                    "region.r_comment"
-                ],
-                "Shared Hit Blocks": 0,
-                "Shared Read Blocks": 0,
-                "Shared Dirtied Blocks": 0,
-                "Shared Written Blocks": 0,
-                "Local Hit Blocks": 0,
-                "Local Read Blocks": 0,
-                "Local Dirtied Blocks": 0,
-                "Local Written Blocks": 0,
-                "Temp Read Blocks": 0,
-                "Temp Written Blocks": 0,
-                "Query": "\n        SELECT region.r_regionkey, region.r_name, region.r_comment \n        FROM region \n        AS region\n    ",
-                "Filename": "_17002282187167730.csv",
-                "NodeID": 7,
-                "ParentNodeID": 6
-            }
-        ],
-        "3": [
-            {
-                "Node Type": "Hash Join",
-                "Parent Relationship": "Outer",
-                "Parallel Aware": false,
-                "Async Capable": false,
-                "Join Type": "Inner",
-                "Startup Cost": 13.82,
-                "Total Cost": 25.98,
-                "Plan Rows": 170,
-                "Plan Width": 864,
-                "Actual Startup Time": 0.0,
-                "Actual Total Time": 0.0,
-                "Actual Rows": 0,
-                "Actual Loops": 0,
-                "Output": [
-                    "nation.n_nationkey",
-                    "nation.n_name",
-                    "nation.n_regionkey",
-                    "nation.n_comment",
-                    "region.r_regionkey",
-                    "region.r_name",
-                    "region.r_comment"
-                ],
-                "Inner Unique": true,
-                "Hash Cond": "(nation.n_regionkey = region.r_regionkey)",
-                "Shared Hit Blocks": 0,
-                "Shared Read Blocks": 0,
-                "Shared Dirtied Blocks": 0,
-                "Shared Written Blocks": 0,
-                "Local Hit Blocks": 0,
-                "Local Read Blocks": 0,
-                "Local Dirtied Blocks": 0,
-                "Local Written Blocks": 0,
-                "Temp Read Blocks": 0,
-                "Temp Written Blocks": 0,
-                "Query": "\n        SELECT\n            nation.n_nationkey, nation.n_name, nation.n_regionkey, nation.n_comment, region.r_regionkey, region.r_name, region.r_comment\n        FROM \n            (\n                \n        SELECT nation.n_nationkey, nation.n_name, nation.n_regionkey, nation.n_comment \n        FROM nation \n        AS nation\n    \n            ) AS nation\n    Inner JOIN\n(\n        SELECT region.r_regionkey, region.r_name, region.r_comment \n        FROM region \n        AS region\n    ) AS region\nON (nation.n_regionkey = region.r_regionkey)\n",
-                "Filename": "_17002282187183620.csv",
-                "NodeID": 4,
-                "ParentNodeID": 3
-            }
-        ],
-        "2": [
-            {
-                "Node Type": "Sort",
-                "Parent Relationship": "Outer",
-                "Parallel Aware": false,
-                "Async Capable": false,
-                "Startup Cost": 32.28,
-                "Total Cost": 32.71,
-                "Plan Rows": 170,
-                "Plan Width": 864,
-                "Actual Startup Time": 0.0,
-                "Actual Total Time": 0.0,
-                "Actual Rows": 0,
-                "Actual Loops": 0,
-                "Output": [
-                    "nation.n_nationkey",
-                    "nation.n_name",
-                    "nation.n_regionkey",
-                    "nation.n_comment",
-                    "region.r_regionkey",
-                    "region.r_name",
-                    "region.r_comment"
-                ],
-                "Sort Key": [
-                    "nation.n_nationkey"
-                ],
-                "Shared Hit Blocks": 0,
-                "Shared Read Blocks": 0,
-                "Shared Dirtied Blocks": 0,
-                "Shared Written Blocks": 0,
-                "Local Hit Blocks": 0,
-                "Local Read Blocks": 0,
-                "Local Dirtied Blocks": 0,
-                "Local Written Blocks": 0,
-                "Temp Read Blocks": 0,
-                "Temp Written Blocks": 0,
-                "Query": "\n        SELECT\n            nation.n_nationkey, nation.n_name, nation.n_regionkey, nation.n_comment, region.r_regionkey, region.r_name, region.r_comment\n        FROM \n            (\n                \n        SELECT nation.n_nationkey, nation.n_name, nation.n_regionkey, nation.n_comment \n        FROM nation \n        AS nation\n    \n            ) AS nation\n    Inner JOIN\n(\n        SELECT region.r_regionkey, region.r_name, region.r_comment \n        FROM region \n        AS region\n    ) AS region\nON (nation.n_regionkey = region.r_regionkey)\n\nORDER BY\nn_nationkey",
-                "Filename": "_17002282187238360.csv",
-                "NodeID": 3,
-                "ParentNodeID": 2
-            }
-        ],
         "0": [
             {
-                "Node Type": "Hash Join",
+                "Node Type": "Seq Scan",
                 "Parallel Aware": false,
                 "Async Capable": false,
-                "Join Type": "Inner",
-                "Startup Cost": 34.83,
-                "Total Cost": 48.39,
-                "Plan Rows": 150,
-                "Plan Width": 1376,
-                "Actual Startup Time": 0.007,
-                "Actual Total Time": 0.008,
+                "Relation Name": "customer",
+                "Schema": "public",
+                "Alias": "customer",
+                "Startup Cost": 0.0,
+                "Total Cost": 11.4,
+                "Plan Rows": 140,
+                "Plan Width": 552,
+                "Actual Startup Time": 0.005,
+                "Actual Total Time": 0.005,
                 "Actual Rows": 0,
                 "Actual Loops": 1,
                 "Output": [
-                    "nation.n_nationkey",
-                    "nation.n_name",
-                    "nation.n_regionkey",
-                    "nation.n_comment",
-                    "region.r_regionkey",
-                    "region.r_name",
-                    "region.r_comment",
-                    "supplier.s_suppkey",
-                    "supplier.s_name",
-                    "supplier.s_address",
-                    "supplier.s_nationkey",
-                    "supplier.s_phone",
-                    "supplier.s_acctbal",
-                    "supplier.s_comment"
+                    "c_custkey",
+                    "c_name",
+                    "c_address",
+                    "c_nationkey",
+                    "c_phone",
+                    "c_acctbal",
+                    "c_mktsegment",
+                    "c_comment"
                 ],
-                "Inner Unique": false,
-                "Hash Cond": "(supplier.s_nationkey = nation.n_nationkey)",
                 "Shared Hit Blocks": 0,
                 "Shared Read Blocks": 0,
                 "Shared Dirtied Blocks": 0,
@@ -317,15 +36,15 @@
                 "Local Written Blocks": 0,
                 "Temp Read Blocks": 0,
                 "Temp Written Blocks": 0,
-                "Query": "\n        SELECT\n            _17002282187269840.n_nationkey, _17002282187269840.n_name, _17002282187269840.n_regionkey, _17002282187269840.n_comment, _17002282187269840.r_regionkey, _17002282187269840.r_name, _17002282187269840.r_comment, supplier.s_suppkey, supplier.s_name, supplier.s_address, supplier.s_nationkey, supplier.s_phone, supplier.s_acctbal, supplier.s_comment\n        FROM \n            (\n                \n        SELECT supplier.s_suppkey, supplier.s_name, supplier.s_address, supplier.s_nationkey, supplier.s_phone, supplier.s_acctbal, supplier.s_comment \n        FROM supplier \n        AS supplier\n    \n            ) AS supplier\n    Inner JOIN\n(\n        SELECT\n            nation.n_nationkey, nation.n_name, nation.n_regionkey, nation.n_comment, region.r_regionkey, region.r_name, region.r_comment\n        FROM \n            (\n                \n        SELECT nation.n_nationkey, nation.n_name, nation.n_regionkey, nation.n_comment \n        FROM nation \n        AS nation\n    \n            ) AS nation\n    Inner JOIN\n(\n        SELECT region.r_regionkey, region.r_name, region.r_comment \n        FROM region \n        AS region\n    ) AS region\nON (nation.n_regionkey = region.r_regionkey)\n\nORDER BY\nn_nationkey) AS _17002282187269840\nON (supplier.s_nationkey = _17002282187269840.n_nationkey)\n",
-                "Filename": "_17002282187270050.csv",
+                "Query": "\n        SELECT c_custkey, c_name, c_address, c_nationkey, c_phone, c_acctbal, c_mktsegment, c_comment \n        FROM customer \n        AS customer\n    ",
+                "Filename": "_17002291579911292.csv",
                 "NodeID": 0,
                 "ParentNodeID": null
             }
         ]
     },
     "additionalInfo": {
-        "Shared Hit Blocks": 117,
+        "Shared Hit Blocks": 32,
         "Shared Read Blocks": 0,
         "Shared Dirtied Blocks": 0,
         "Shared Written Blocks": 0,
@@ -335,56 +54,6 @@
         "Local Written Blocks": 0,
         "Temp Read Blocks": 0,
         "Temp Written Blocks": 0,
-        "Ranking": [
-            [
-                [
-                    "Seq Scan",
-                    1
-                ],
-                11.5
-            ],
-            [
-                [
-                    "Seq Scan",
-                    5
-                ],
-                11.7
-            ],
-            [
-                [
-                    "Seq Scan",
-                    7
-                ],
-                11.7
-            ],
-            [
-                [
-                    "Hash",
-                    6
-                ],
-                11.7
-            ],
-            [
-                [
-                    "Hash Join",
-                    4
-                ],
-                25.98
-            ],
-            [
-                [
-                    "Sort",
-                    3
-                ],
-                32.71
-            ],
-            [
-                [
-                    "Hash",
-                    2
-                ],
-                32.71
-            ]
-        ]
+        "Ranking": []
     }
 }
