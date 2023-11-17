@@ -317,6 +317,7 @@ class QEP:
         for file in os.listdir():
             if file[0] == '_' and file.endswith('.csv'):
                 os.remove(file)
+                logger.info(f'Removed: {file}')
 
 # ==================== QEP Tree formatter ====================
 
