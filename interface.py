@@ -42,7 +42,8 @@ SQL_WINDOW_HEIGHT = 600
 WINDOW_WIDTH = 1980
 WINDOW_HEIGHT = 1800
 
-childrenRelation = defaultdict(list)
+descendants = defaultdict(list)
+parsedQepData = {}
 """
 Main Application Window
 """
@@ -156,9 +157,8 @@ class SQLQueryWindow(QWidget):
         with open('testTree.json', 'w') as out:
             out.write(json.dumps(qepData, indent=4))
         
-        QEPExecutor.cleanup()
-        
-        parsedQepData = qepData.get("tree", "N/A")
+
+        parsedQepData.update(qepData.get("tree", "N/A"))
         
         # Check if parsedData is None
         if parsedQepData is "N/A":
@@ -167,17 +167,9 @@ class SQLQueryWindow(QWidget):
 
         for level in sorted(parsedQepData.keys(), reverse=True):
             for node in parsedQepData[level]:
-                if node.get('Relation Name', None):
-                    childrenRelation[node['ParentNodeID']].append(node.get('Relation Name'))
-                elif childrenRelation[node['NodeID']]:
-                    temp = childrenRelation[node['NodeID']][0] if len(childrenRelation[node['NodeID']]) == 1 else childrenRelation[node['NodeID']]
-                    if len(childrenRelation[node['ParentNodeID']]) != 0:
-                        childrenRelation[node['ParentNodeID']].append(temp)
-                    else:
-                        childrenRelation[node['ParentNodeID']] = temp
-                else:
-                    print('error')
+                descendants[node['ParentNodeID']].append(node['NodeID'])
 
+        print(getInputFiles(0, 2))
 
         # Update the Window's content
         self.qepTreeWindow.updateContent(parsedQepData)
@@ -185,10 +177,30 @@ class SQLQueryWindow(QWidget):
         # Clear the Text after Submission
         self.textEdit.clear()
 
+        QEPExecutor.cleanup()
 
 """
 Helper Function to help Parse the JSON Object from PostgreSQL to build the QEP Tree
 """
+
+"""
+Helper function to get the input files for a given node
+"""
+def getInputFiles(nodeId, needed):
+    res = []
+    def temp(nodeId):
+        for children in descendants[nodeId]:
+            for node in parsedQepData[children]:
+                if node.get('Filename', None) != None:
+                    res.append(node['Filename'])
+        if len(res) != needed:
+            for children in descendants[nodeId]:
+                temp(children)
+    
+    temp(nodeId)
+
+    return res
+
 class NodeInfoDialog(QDialog):
     def __init__(self, nodeData, parent=None):
         super(NodeInfoDialog, self).__init__(parent)
