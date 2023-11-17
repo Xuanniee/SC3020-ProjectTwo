@@ -213,9 +213,10 @@ def getInputFiles(nodeId, needed):
     res = []
     def temp(nodeId):
         for children in descendants[nodeId]:
-            for node in parsedQepData[children]:
-                if node.get('Filename', None) != None:
-                    res.append(node['Filename'])
+            for level in parsedQepData.keys():
+                for node in parsedQepData[level]: 
+                    if node['NodeID'] == children and node.get('Filename', None) != None:
+                        res.append(node['Filename'])
         if len(res) != needed:
             for children in descendants[nodeId]:
                 temp(children)
@@ -342,9 +343,9 @@ class CustomNode(QGraphicsRectItem):
             print([relationName])
             self.beforeWindowWrapper.updateWindow(firstOperator, r1Name=[relationName], relation1=DataRetriever(self.db).getBlockNumber(relationName=[relationName]), relationOut=DataRetriever(self.db).getInterData(outRelation))
         elif isJoin:
-            self.beforeWindowWrapper.updateWindow(firstOperator, r1Name=None, relation1=DataRetriever(self.db).getInterData(files[0]), r2Name=None, relation2=DataRetriever(self.db).getInterData(files[1]), relationOut=DataRetriever(self.db).getInterData(outRelation))
+            self.beforeWindowWrapper.updateWindow(False, r1Name=None, relation1=DataRetriever(self.db).getInterData(files[0]), r2Name="", relation2=DataRetriever(self.db).getInterData(files[1]), relationOut=DataRetriever(self.db).getInterData(outRelation))
         else:
-            self.beforeWindowWrapper.updateWindow(firstOperator, r1Name=None, relation1=DataRetriever(self.db).getInterData(files[0]), relationOut=DataRetriever(self.db).getInterData(outRelation))
+            self.beforeWindowWrapper.updateWindow(False, r1Name=None, relation1=DataRetriever(self.db).getInterData(files[0]), relationOut=DataRetriever(self.db).getInterData(outRelation))
         
         # Display a pop-up window when the user clicks on the rectangle
         node_info_dialog = NodeInfoDialog(self.nodeData, self.isLeaf, self.beforeWindowWrapper)
@@ -821,7 +822,7 @@ class OutTable(QtCore.QAbstractTableModel):
     
 
 class BeforeWindow(QMainWindow):
-    def __init__(self, first, r1Name, relation1, relationOut, database, r2Name=None, relation2=None):
+    def __init__(self, first, r1Name, relation1, relationOut, database, r2Name=None, relation2=[]):
         super().__init__()
         '''first: boolean'''
         self.db = database
@@ -840,7 +841,7 @@ class BeforeWindow(QMainWindow):
                 self._r1Name += r1Name[i]
                 i+=1
         else:
-            self._r1Name = ""
+            self._r1Name = "A"
         
         title = QLabel("BLOCKS VISUALISATION", alignment = Qt.AlignmentFlag.AlignCenter)
         table1Label = QLabel("Relation " + self._r1Name, alignment = Qt.AlignmentFlag.AlignCenter)
@@ -887,15 +888,18 @@ class BeforeWindow(QMainWindow):
         central_widget.setLayout(layout)
         self.setCentralWidget(central_widget)
 
-        if r2Name:
+        if r2Name or (not relation2.empty):
             self.data2 = relation2
             self.table2 = QTableView()
-            self._r2Name = r2Name[0]
-            i=1
-            while i < len(r2Name):
-                self._r2Name += '+'
-                self._r2Name += r2Name[i]
-                i+=1
+            if r2Name:
+                self._r2Name = r2Name[0]
+                i=1
+                while i < len(r2Name):
+                    self._r2Name += '+'
+                    self._r2Name += r2Name[i]
+                    i+=1
+            else:
+                self._r2Name = "B"
 
             table2Label = QLabel("Relation "+ self._r2Name)
             self.model2 = BlockTable(self.data2, None)
