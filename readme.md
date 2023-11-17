@@ -10,8 +10,9 @@ This project was made with generality in mind, therefore, a few assumptions are 
 ## Setup
 
 ### Docker environment
+NOTE: This step is not necessary if you wish to run Postgresql directly on your machine.
 
-To create an isolated postgresql instance, the following instructions can be followed to run postgresql in a docker container. However, the data must still be initialised by the user
+To create an isolated postgresql instance, the following instructions can be followed to run postgresql in a docker container. However, the data must still be initialised by the user.
 
 * Install docker, it will come with docker compose CLI.
     + https://www.docker.com/products/docker-desktop/
@@ -63,22 +64,24 @@ pip install -r requirements.txt
 
 ### Running the app
 
-NOTE: The Database connection parameters in project.py must be modified appropriately, else the app will fail to run.
+NOTE: The Database connection parameters in `project.py` must be modified appropriately, else the app will fail to run.
 ```
 # Generate the database instance and connection, modify the parameters as appropriate
-    DB = Database(DB_NAME='tpch', 
-                  DB_USER='postgres', 
-                  DB_PASSWORD='postgres', 
-                  DB_HOST='localhost', 
-                  PORT=5432)
+DB = Database(DB_NAME='tpch', 
+                DB_USER='postgres', 
+                DB_PASSWORD='postgres', 
+                DB_HOST='localhost', 
+                PORT=5432)
 ```
 
-# PY AND XY PLS JHELP
+To run the app, run the `project.py` file
 
 #### Deactivate Virtual Env
-# Mac
+Mac
+```
 source bin/deactivate
-
-# Windows
-deactive
+```
+Windows
+```
+deactivate
 ```
