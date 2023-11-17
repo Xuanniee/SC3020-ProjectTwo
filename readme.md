@@ -7,12 +7,6 @@ This project was made with generality in mind, therefore, a few assumptions are 
 * All the tables in the database have been created, and they have been populated with data
 * A postgres superuser with the appropriate credentials exists
 
-
-
-However, to allow user's to use our app with minimal setup, we have provided the raw TPC-H data as well as initialisation of the database and data within the code as well.
-* To use the built-in initialisation features, follow the instructions under `TPC-H setup`
-Install docker, it will come with docker compose CLI.
-
 ## Setup
 
 ### Docker environment
@@ -71,10 +65,17 @@ pip install -r requirements.txt
 
 NOTE: The Database connection parameters in project.py must be modified appropriately, else the app will fail to run.
 ```
+# Generate the database instance and connection, modify the parameters as appropriate
+    DB = Database(DB_NAME='tpch', 
+                  DB_USER='postgres', 
+                  DB_PASSWORD='postgres', 
+                  DB_HOST='localhost', 
+                  PORT=5432)
+```
+
+# PY AND XY PLS JHELP
 
 #### Deactivate Virtual Env
-
-```
 # Mac
 source bin/deactivate
 

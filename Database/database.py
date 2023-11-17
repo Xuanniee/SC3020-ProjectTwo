@@ -4,7 +4,7 @@ import csv
 import sys
 import os
 
-# ==================== Global vars ====================
+# ==================== Global vars, for initialisation ====================
 
 filenames = ['region.csv', 'nation.csv', 'part.csv', 'supplier.csv', 'partsupp.csv', 'customer.csv', 'orders.csv', 'lineitem.csv'];
 relations = []
@@ -55,7 +55,7 @@ alterOrderTable = 'ALTER TABLE public.orders OWNER to postgres';
 createLineitemTable = 'CREATE TABLE IF NOT EXISTS public.lineitem (l_orderkey integer NOT NULL, l_partkey integer NOT NULL, l_suppkey integer NOT NULL, l_linenumber integer NOT NULL, l_quantity numeric(15,2) NOT NULL, l_extendedprice numeric(15,2) NOT NULL, l_discount numeric(15,2) NOT NULL, l_tax numeric(15,2) NOT NULL, l_returnflag character(1) COLLATE pg_catalog."default" NOT NULL, l_linestatus character(1) COLLATE pg_catalog."default" NOT NULL, l_shipdate date NOT NULL, l_commitdate date NOT NULL, l_receiptdate date NOT NULL, l_shipinstruct character(25) COLLATE pg_catalog."default" NOT NULL, l_shipmode character(10) COLLATE pg_catalog."default" NOT NULL, l_comment character varying(44) COLLATE pg_catalog."default" NOT NULL, CONSTRAINT lineitem_pkey PRIMARY KEY (l_orderkey, l_partkey, l_suppkey, l_linenumber), CONSTRAINT fk_lineitem_orderkey FOREIGN KEY (l_orderkey) REFERENCES public.orders (o_orderkey) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION, CONSTRAINT fk_lineitem_partkey FOREIGN KEY (l_partkey) REFERENCES public.part (p_partkey) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION, CONSTRAINT fk_lineitem_suppkey FOREIGN KEY (l_suppkey) REFERENCES public.supplier MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION) WITH (OIDS = FALSE) TABLESPACE pg_default';
 alterLineitemTable = 'ALTER TABLE public.lineitem OWNER to postgres';
 
-# ==================== Functions to create and setup database ====================
+# ==================== Functions to connect to database ====================
 
 class Database:
 
@@ -64,7 +64,8 @@ class Database:
                  DB_USER = 'postgres',
                  DB_PASSWORD = 'postgres',
                  DB_HOST = 'localhost',
-                 PORT = 5432):
+                 PORT = 5432,
+                 dev=False):
         
         self.DB_NAME = DB_NAME
         self.DB_USER = DB_USER
@@ -84,8 +85,7 @@ class Database:
             self.cursor = self.connection.cursor()
             print("Connected")
         except:
-            print(f'{DB_NAME} does not exist')
-            if DB_NAME != 'tpch':
+            if not dev:
                 print(f'Unknown database, please create database {DB_NAME} and insert all data before trying again')
                 sys.exit()
             else:
@@ -100,7 +100,12 @@ class Database:
         self.cursor.close()
         self.connection.close()
 
+# ==================== Functions to initialise database for developers ====================
+
     def initDB(self):
+        '''
+        Initialisation function for dev environments, to load TPC-H data
+        '''
         print("Initialising")
 
         connection = pg.connect(host = self.DB_HOST,
