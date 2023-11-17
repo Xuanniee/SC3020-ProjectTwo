@@ -27,10 +27,8 @@ from PyQt6.QtWidgets import (
     QTableView,
 )
 
-from explainExample9 import qepObject
 from Database.database import Database
 from explore import QEP, generateTree
-
 
 """
 Global Parameters
@@ -40,9 +38,9 @@ SQL_WINDOW_HEIGHT = 600
 WINDOW_WIDTH = 1980
 WINDOW_HEIGHT = 1800
 
-
 """
 Main Application Window
+Output contains relations, Node Type check if Join, Filename pass also
 """
 class QueryWindowGUI(QMainWindow):
     def __init__(self, dbName, dbUser, dbPassword, dbHost, portNum, qepObject=None, parsedQepData=None):
@@ -84,9 +82,10 @@ class QueryWindowGUI(QMainWindow):
     def _createCentralLayout(self):
         centralWidget = QWidget()
         centralAppLayout = QGridLayout(centralWidget)
+        beforeWindowWrapper = BeforeWindowWrapper()
 
         # Create and add SQLQueryWindow and LabelledQEPTreeWindow
-        window2 = LabelledQEPTreeWindow(self.parsedQepData)
+        window2 = LabelledQEPTreeWindow(self.parsedQepData, beforeWindowWrapper)
         window1 = SQLQueryWindow(qepTreeWindow=window2, database=self.db)
 
         # Add instructions QLabel at the top
@@ -96,8 +95,13 @@ class QueryWindowGUI(QMainWindow):
         # Set the Various Windows required
         centralAppLayout.addWidget(window1, 1, 0)
         centralAppLayout.addWidget(window2, 1, 1)
-        centralAppLayout.addWidget(BeforeWindow(False,  ["orders"], DataRetriever().getInterData('_17001997288923678.csv'), DataRetriever().getInterData('_17001998061102650.csv')), 1, 2)
-        centralAppLayout.addWidget(BeforeWindow(False,  ["orders"], DataRetriever().getInterData('_17001997288923678.csv'), DataRetriever().getInterData('_17001998061102650.csv')), 1, 2)
+
+        # Create BeforeWindowWrapper
+        # beforeWindowWrapper = BeforeWindowWrapper(False, ["orders"], DataRetriever().getInterData('_17001997288923678.csv'), DataRetriever().getInterData('_17001998061102650.csv'))
+        
+
+        # Add BeforeWindowWrapper to layout
+        centralAppLayout.addWidget(beforeWindowWrapper, 1, 2)
 
         scrollArea = QScrollArea()
         scrollArea.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -106,6 +110,21 @@ class QueryWindowGUI(QMainWindow):
 
         self.setCentralWidget(scrollArea)
 
+class EmptyWindow(QWidget):
+    def __init__(self):
+        super(EmptyWindow, self).__init__()
+
+        self.setWindowTitle("Empty Window")
+        self.setGeometry(100, 100, SQL_WINDOW_WIDTH, SQL_WINDOW_HEIGHT)
+
+        layout = QVBoxLayout()
+
+        subheading_label = QLabel("Detailed Visualisations are only available after providing a SQL query and clicking a node in the QEP tree")
+        subheading_label.setStyleSheet("font-size: 16pt;")
+
+        layout.addWidget(subheading_label)
+
+        self.setLayout(layout)
 
 """
 Window 1 - Provide SQL Query from User
@@ -174,10 +193,13 @@ class SQLQueryWindow(QWidget):
 Helper Function to help Parse the JSON Object from PostgreSQL to build the QEP Tree
 """
 class NodeInfoDialog(QDialog):
-    def __init__(self, nodeData, parent=None):
+    def __init__(self, nodeData, isLeaf, beforeWindowWrapper, parent=None):
         super(NodeInfoDialog, self).__init__(parent)
         self.setWindowTitle("Node Information")
         self.setGeometry(100, 100, 400, 300)
+        self.nodeData = nodeData
+        self.isLeaf = isLeaf
+        self.beforeWindowWrapper = beforeWindowWrapper
 
         layout = QVBoxLayout()
 
@@ -200,19 +222,40 @@ class NodeInfoDialog(QDialog):
     def retrieveNodeInfo(self, nodeData):
         info = ""
         for key, value in nodeData.items():
-            if key != "Query" or key != "Filename":
+            if key != "Query" and key != "Filename":
                 info += f"{key}: {value}\n"
         return info
 
     def furtherVisualise(self):
-        # BeforeWindow(False,  ["orders"], DataRetriever().getInterData('_17001997288923678.csv'), DataRetriever().getInterData('_17001998061102650.csv')
-        # Determine if it's first
-        pass
+        print("Came in")
+        
+        # Extract Output, NodeType, Filename
+        nodeOutput = self.nodeData["Output"]
+        nodeFilename = self.nodeData["Filename"]
+        nodeType = self.nodeData["Node Type"]
+
+        # Update the BeforeWindowProps object based on the calculated relations_set
+        relations_set = {item.split('.')[0] for item in nodeOutput}
+
+        # # File
+        # self.beforeWindowProps["r1Name"] = relations_set.pop() if relations_set else None
+        # self.beforeWindowProps["r2Name"] = relations_set.pop() if relations_set else None
+        
+        # # True if it's a leaf node, else it is not
+        # self.beforeWindowProps["firstOperator"] = True if self.isLeaf else None
+        # self.beforeWindowProps["filename"] = nodeFilename
+        # self.beforeWindowProps["updated"] = True
+
+        # Call the Update Function, thereby passing
+        self.beforeWindowWrapper.updateWindow(first=False, r1Name=["orders"], relation1=DataRetriever().getInterData('_17001997288923678.csv'), relationOut=DataRetriever().getInterData('_17001998061102650.csv'))
+        
+        
 
 class CustomNode(QGraphicsRectItem):
-    def __init__(self, x, y, width, height, nodeData):
+    def __init__(self, x, y, width, height, nodeData, beforeWindowWrapper):
         super().__init__(x, y, width, height)
         self.nodeData = nodeData
+        self.beforeWindowWrapper = beforeWindowWrapper
         # Assume it is a Leaf Node until proven otherwise
         self.isLeaf = True
         self.setAcceptHoverEvents(True)
@@ -244,7 +287,7 @@ class CustomNode(QGraphicsRectItem):
 
     def mousePressEvent(self, event):
         # Display a pop-up window when the user clicks on the rectangle
-        node_info_dialog = NodeInfoDialog(self.nodeData)
+        node_info_dialog = NodeInfoDialog(self.nodeData, self.isLeaf, self.beforeWindowWrapper)
         node_info_dialog.exec()
 
     def retrieveNodeInfo(self, nodeData):
@@ -267,8 +310,9 @@ NODE_HORIZONTAL_SPACING = 20
 NODE_VERTICAL_SPACING = 100
 
 class LabelledQEPTreeWindow(QWidget):
-    def __init__(self, parsedQepData, parent=None):
+    def __init__(self, parsedQepData, beforeWindowWrapper, parent=None):
         super(LabelledQEPTreeWindow, self).__init__(parent)
+        self.beforeWindowWrapper = beforeWindowWrapper
 
         # Create a QVBoxLayout
         layout = QVBoxLayout(self)
@@ -278,7 +322,7 @@ class LabelledQEPTreeWindow(QWidget):
         layout.addWidget(label, alignment=Qt.AlignmentFlag.AlignTop |   Qt.AlignmentFlag.AlignHCenter)
 
         # Create an instance of QEPTreeWindow and add it to the layout
-        self.treeWindow = QEPTreeWindow(parsedQepData)
+        self.treeWindow = QEPTreeWindow(parsedQepData, beforeWindowWrapper)
         layout.addWidget(self.treeWindow, alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
 
         # Manually set the sizeHint of the label to reduce the vertical gap
@@ -297,9 +341,10 @@ class LabelledQEPTreeWindow(QWidget):
 
 
 class QEPTreeWindow(QGraphicsView):
-    def __init__(self, parsedQepData, parent=None):
+    def __init__(self, parsedQepData, beforeWindowWrapper, parent=None):
         super(QEPTreeWindow, self).__init__(parent)
         self.parsedQepData = parsedQepData
+        self.beforeWindowWrapper = beforeWindowWrapper
         self.setFixedSize(SQL_WINDOW_WIDTH * 2, SQL_WINDOW_HEIGHT)
 
         # Create a Dictionary to Track Nodes with their Top and Bottom Coordinates
@@ -358,7 +403,7 @@ class QEPTreeWindow(QGraphicsView):
                     currX  = currX + NODE_WIDTH + NODE_HORIZONTAL_SPACING
 
                 # Create a QGraphicsRectItem for the current node
-                currNode = CustomNode(currX, currY, NODE_WIDTH, NODE_HEIGHT, node)
+                currNode = CustomNode(currX, currY, NODE_WIDTH, NODE_HEIGHT, node, self.beforeWindowWrapper)
         
                 scene.addItem(currNode)
 
@@ -381,7 +426,6 @@ class QEPTreeWindow(QGraphicsView):
                 # print("Bot: ", (currBotX, currBotY))
                 self.topDict[currNodeID] = (currTopX, currTopY)
                 self.bottomDict[currNodeID] = (currBotX, currBotY)
-
 
                 # Draw line connecting parent and child nodes
                 # print(level)
@@ -437,7 +481,7 @@ class QEPTreeWindow(QGraphicsView):
                     relationName = node.get('Relation Name', 'N/A')
 
                     # Draw another rectangle representing the relation directly below the leaf node
-                    relationRect = CustomNode(currTopX - (NODE_WIDTH/2), currTopY + NODE_HEIGHT + NODE_VERTICAL_SPACING, NODE_WIDTH, NODE_HEIGHT, {'Relation Name': relationName})
+                    relationRect = CustomNode(currTopX - (NODE_WIDTH/2), currTopY + NODE_HEIGHT + NODE_VERTICAL_SPACING, NODE_WIDTH, NODE_HEIGHT, {'Relation Name': relationName}, self.beforeWindowWrapper)
                     relationRect.setBrush(Qt.GlobalColor.lightGray)
                     scene.addItem(relationRect)
 
@@ -476,6 +520,33 @@ class QEPTreeWindow(QGraphicsView):
 """
 Window 3 - Display the Before of Data Block Visualisations
 """
+class BeforeWindowWrapper(QWidget):
+    def __init__(self):
+        super(BeforeWindowWrapper, self).__init__()
+
+        self.beforeWindow = EmptyWindow()
+
+        # Create layout
+        layout = QVBoxLayout(self)
+        layout.addWidget(self.beforeWindow)
+
+        # Add a button to trigger the update
+        update_button = QPushButton("Update Window")
+        update_button.clicked.connect(self.updateWindow)  # Connect without passing arguments
+        layout.addWidget(update_button)
+
+    def updateWindow(self, first, r1Name, relation1, relationOut, r2Name=None, relation2=None):
+        # Update the window with the stored data
+        self.beforeWindow = BeforeWindow(first, r1Name, relation1, relationOut, r2Name, relation2)
+        
+        # Clear the layout and add the updated window
+        layout = self.layout()
+        for i in reversed(range(layout.count())):
+            layout.itemAt(i).widget().setParent(None)
+        layout.addWidget(self.beforeWindow)
+        
+
+
 class TupleWindow(QWidget):
     """
     This "window" is a QWidget. If it has no parent, it
