@@ -34,7 +34,7 @@ def store_query(f: Callable) -> Callable:
         op['Query'] = query
 
         if qep:
-            fname = qep.store(query)
+            fname = qep.store(query, f.__name__)
             if fname:
                 op['Filename'] = fname
         return query
@@ -222,31 +222,31 @@ class QEP:
         self.__db = db
 
 
-    def __enter__(self):
-        return self
-
-
     def resolve(self):
         """Start operator resolve chain"""
 
         self._resolve_opt(self.__qep)
 
 
-    def store(self, query: str) -> str:
+    def store(self, query: str, qtype: str) -> str:
         """Run a query and save results in temporary csv file"""
+
+        if qtype == 'scan':
+            temp = query.strip().split(' ')
+            query = temp[0] + ' ctid, ' + ' '.join(temp[1:])
 
         query_out = "COPY ({0}) TO STDOUT WITH CSV HEADER".format(query)
         fname = f'{_rand_id()}.csv'
 
         with open(fname, 'w') as f:
             try:
-                self.__db.cursor.copy_expert(query_out, f)        
+                self.__db.cursor.copy_expert(query_out, f)    
             except Exception as e:
                 print(e)
                 return
         
-        logger.info('Saved to:', fname)
-        logger.debug(query, '\n')
+        logger.info(f'Saved to: {fname}')
+        logger.debug(f'{query}\n')
         self.__saved.append(fname)
 
         return fname
@@ -258,7 +258,7 @@ class QEP:
         _type = op['Node Type']
         failed = False
 
-        logger.info('Resolving:', _type)
+        logger.info(f'Resolving: {_type}')
         
         for child_op in op.get('Plans', []):
             if not self._resolve_opt(child_op):
@@ -289,17 +289,21 @@ class QEP:
                 op['Query'] = child['Query']
                 op['Alias'] = child.get('Alias')
             
-            logger.debug('Project up:', _type)
+            logger.debug(f'Projecting operatore upstream: {_type}')
         return op['Query'] != ''
 
-    def __exit__(self, *args):
+    def cleanup(self):
         import os
 
         logger.info('Exiting QEP ...')
 
         for file in self.__saved:
-            os.remove(file)
-            logger.info(f'Removed: {file}')
+            try:
+                os.remove(file)
+                logger.info(f'Removed: {file}')
+            except:
+                pass
+        self.__saved.clear()
 
 # ==================== QEP Tree formatter ====================
 
