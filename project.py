@@ -12,8 +12,6 @@ def main():
     DB_HOST = 'localhost'
     PORT = 5432
     
-    # query = "SELECT * FROM ( SELECT * FROM nation, region WHERE nation.n_regionkey = region.r_regionkey ORDER BY nation.n_nationkey) AS T1, supplier WHERE T1.n_nationkey = supplier.s_nationkey"
-
     # Start the GUI
     queryApp = QApplication([])
     queryWindow = QueryWindowGUI(DB_NAME, DB_USER, DB_PASSWORD,DB_HOST, PORT)
