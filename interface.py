@@ -242,12 +242,12 @@ class NodeInfoDialog(QDialog):
         layout.addWidget(text_browser)
 
         # Add a button to Pass the Data to 3rd Window
-        button = QPushButton("Visualise in Greater Detail")
+        # button = QPushButton("Visualise in Greater Detail")
 
         # Pass the Filename
         # button.clicked.connect(self.furtherVisualise)
         
-        layout.addWidget(button)
+        # layout.addWidget(button)
 
         self.setLayout(layout)
 
@@ -267,11 +267,7 @@ class NodeInfoDialog(QDialog):
         outRelation = self.nodeData["Filename"]
 
         nodeType = self.nodeData["Node Type"]
-        isJoin = 'Join Type' in self.nodeData
 
-        filesNeeded = 2 if isJoin else 1
-
-        files = getInputFiles(self.nodeData['NodeID'], filesNeeded)
 
         # Update the BeforeWindowProps object based on the calculated relations_set
         relations_set = {item.split('.')[0] for item in nodeOutput}
@@ -286,12 +282,7 @@ class NodeInfoDialog(QDialog):
 
         # self.beforeWindowProps["updated"] = True
 
-        # Call the Update Function, thereby passing
-        if isJoin:
-            self.beforeWindowWrapper.updateWindow(first=False, r1Name=['orders'], relation1=DataRetriever().getInterData(files[0]), r2Name=['nation'], relation2=DataRetriever().getInterData(files[1]), relationOut=DataRetriever().getInterData(outRelation))
-        else:
-            self.beforeWindowWrapper.updateWindow(first=False, r1Name=["orders"], relation1=DataRetriever().getInterData(files[0]), relationOut=DataRetriever().getInterData(outRelation))
-        
+       
         
 
 class CustomNode(QGraphicsRectItem):
@@ -332,11 +323,27 @@ class CustomNode(QGraphicsRectItem):
     def mousePressEvent(self, event):
         # TODO Also display Pei Yee's part. (DISPLAY FIRST)
         # True if it's a leaf node, else it is not
-        firstOperator = True if self.isLeaf else None
+        firstOperator = True if self.isLeaf else False
+        
+        # Determine the Number of Relations we need
+        isJoin = 'Join Type' in self.nodeData
+        filesNeeded = 2 if isJoin else 1
 
+        files = getInputFiles(self.nodeData['NodeID'], filesNeeded)
+        outRelation = self.nodeData.get("Filename", None)
 
+        if outRelation is None:
+            outRelation = files[0]
 
-        self.beforeWindowWrapper.updateWindow(False, r1Name=["orders"], relation1=DataRetriever().getInterData('_17001997288923678.csv'), relationOut=DataRetriever().getInterData('_17001998061102650.csv'))
+        # Call the Update Function, thereby passing
+        if isJoin:
+            self.beforeWindowWrapper.updateWindow(firstOperator, r1Name=None, relation1=DataRetriever(self.db).getInterData(files[0]), r2Name=None, relation2=DataRetriever(self.db).getInterData(files[1]), relationOut=DataRetriever(self.db).getInterData(outRelation))
+        else:
+            self.beforeWindowWrapper.updateWindow(firstOperator, r1Name=None, relation1=DataRetriever(self.db).getInterData(files[0]), relationOut=DataRetriever(self.db).getInterData(outRelation))
+        
+
+        # self.beforeWindowWrapper.updateWindow(False, r1Name=["orders"], relation1=DataRetriever(self.db).getInterData('_17001997288923678.csv'), relationOut=DataRetriever(self.db).getInterData('_17001998061102650.csv'))
+        
         # Display a pop-up window when the user clicks on the rectangle
         node_info_dialog = NodeInfoDialog(self.nodeData, self.isLeaf, self.beforeWindowWrapper)
         node_info_dialog.exec()
@@ -930,8 +937,8 @@ class BeforeWindow(QMainWindow):
 
 
 class DataRetriever():
-    def __init__(self):
-        self.database = Database()
+    def __init__(self, database):
+        self.database = database
         
     def getBlockNumber(self, relationName):
         '''

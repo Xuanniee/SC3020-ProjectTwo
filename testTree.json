@@ -1,250 +1,22 @@
 {
     "tree": {
-        "10": [
+        "1": [
             {
                 "Node Type": "Seq Scan",
                 "Parent Relationship": "Outer",
                 "Parallel Aware": false,
                 "Async Capable": false,
-                "Relation Name": "orders",
-                "Schema": "public",
-                "Alias": "orders",
-                "Startup Cost": 0.0,
-                "Total Cost": 13.15,
-                "Plan Rows": 1,
-                "Plan Width": 12,
-                "Actual Startup Time": 0.023,
-                "Actual Total Time": 0.023,
-                "Actual Rows": 0,
-                "Actual Loops": 1,
-                "Output": [
-                    "orders.o_orderkey",
-                    "orders.o_custkey",
-                    "orders.o_orderstatus",
-                    "orders.o_totalprice",
-                    "orders.o_orderdate",
-                    "orders.o_orderpriority",
-                    "orders.o_clerk",
-                    "orders.o_shippriority",
-                    "orders.o_comment"
-                ],
-                "Filter": "((orders.o_orderdate >= '1995-01-01'::date) AND (orders.o_orderdate <= '1996-12-31'::date))",
-                "Rows Removed by Filter": 0,
-                "Shared Hit Blocks": 0,
-                "Shared Read Blocks": 0,
-                "Shared Dirtied Blocks": 0,
-                "Shared Written Blocks": 0,
-                "Local Hit Blocks": 0,
-                "Local Read Blocks": 0,
-                "Local Dirtied Blocks": 0,
-                "Local Written Blocks": 0,
-                "Temp Read Blocks": 0,
-                "Temp Written Blocks": 0,
-                "Query": "\n        SELECT orders.o_orderkey, orders.o_custkey, orders.o_orderstatus, orders.o_totalprice, orders.o_orderdate, orders.o_orderpriority, orders.o_clerk, orders.o_shippriority, orders.o_comment \n        FROM orders \n        AS orders\n    WHERE ((orders.o_orderdate >= '1995-01-01'::date) AND (orders.o_orderdate <= '1996-12-31'::date))",
-                "Filename": "_17002268185097740.csv",
-                "NodeID": 10,
-                "ParentNodeID": 9
-            },
-            {
-                "Node Type": "Index Scan",
-                "Parent Relationship": "Inner",
-                "Parallel Aware": false,
-                "Async Capable": false,
-                "Scan Direction": "Forward",
-                "Index Name": "lineitem_pkey",
-                "Relation Name": "lineitem",
-                "Schema": "public",
-                "Alias": "lineitem",
-                "Startup Cost": 0.14,
-                "Total Cost": 8.16,
-                "Plan Rows": 1,
-                "Plan Width": 48,
-                "Actual Startup Time": 0.0,
-                "Actual Total Time": 0.0,
-                "Actual Rows": 0,
-                "Actual Loops": 0,
-                "Output": [
-                    "lineitem.l_orderkey",
-                    "lineitem.l_partkey",
-                    "lineitem.l_suppkey",
-                    "lineitem.l_linenumber",
-                    "lineitem.l_quantity",
-                    "lineitem.l_extendedprice",
-                    "lineitem.l_discount",
-                    "lineitem.l_tax",
-                    "lineitem.l_returnflag",
-                    "lineitem.l_linestatus",
-                    "lineitem.l_shipdate",
-                    "lineitem.l_commitdate",
-                    "lineitem.l_receiptdate",
-                    "lineitem.l_shipinstruct",
-                    "lineitem.l_shipmode",
-                    "lineitem.l_comment"
-                ],
-                "Index Cond": "(lineitem.l_orderkey = orders.o_orderkey)",
-                "Rows Removed by Index Recheck": 0,
-                "Shared Hit Blocks": 0,
-                "Shared Read Blocks": 0,
-                "Shared Dirtied Blocks": 0,
-                "Shared Written Blocks": 0,
-                "Local Hit Blocks": 0,
-                "Local Read Blocks": 0,
-                "Local Dirtied Blocks": 0,
-                "Local Written Blocks": 0,
-                "Temp Read Blocks": 0,
-                "Temp Written Blocks": 0,
-                "Query": "\n        SELECT lineitem.l_orderkey, lineitem.l_partkey, lineitem.l_suppkey, lineitem.l_linenumber, lineitem.l_quantity, lineitem.l_extendedprice, lineitem.l_discount, lineitem.l_tax, lineitem.l_returnflag, lineitem.l_linestatus, lineitem.l_shipdate, lineitem.l_commitdate, lineitem.l_receiptdate, lineitem.l_shipinstruct, lineitem.l_shipmode, lineitem.l_comment \n        FROM lineitem \n        AS lineitem\n    ",
-                "Filename": "_17002268185133700.csv",
-                "NodeID": 11,
-                "ParentNodeID": 9
-            }
-        ],
-        "9": [
-            {
-                "Node Type": "Nested Loop",
-                "Parent Relationship": "Outer",
-                "Parallel Aware": false,
-                "Async Capable": false,
-                "Join Type": "Inner",
-                "Startup Cost": 0.14,
-                "Total Cost": 21.32,
-                "Plan Rows": 1,
-                "Plan Width": 52,
-                "Actual Startup Time": 0.023,
-                "Actual Total Time": 0.024,
-                "Actual Rows": 0,
-                "Actual Loops": 1,
-                "Output": [
-                    "lineitem.l_extendedprice",
-                    "lineitem.l_discount",
-                    "lineitem.l_partkey",
-                    "lineitem.l_suppkey",
-                    "orders.o_orderdate",
-                    "orders.o_custkey"
-                ],
-                "Inner Unique": false,
-                "Shared Hit Blocks": 0,
-                "Shared Read Blocks": 0,
-                "Shared Dirtied Blocks": 0,
-                "Shared Written Blocks": 0,
-                "Local Hit Blocks": 0,
-                "Local Read Blocks": 0,
-                "Local Dirtied Blocks": 0,
-                "Local Written Blocks": 0,
-                "Temp Read Blocks": 0,
-                "Temp Written Blocks": 0,
-                "Query": "\n        SELECT\n            lineitem.l_extendedprice, lineitem.l_discount, lineitem.l_partkey, lineitem.l_suppkey, orders.o_orderdate, orders.o_custkey\n        FROM \n            (\n                \n        SELECT orders.o_orderkey, orders.o_custkey, orders.o_orderstatus, orders.o_totalprice, orders.o_orderdate, orders.o_orderpriority, orders.o_clerk, orders.o_shippriority, orders.o_comment \n        FROM orders \n        AS orders\n    WHERE ((orders.o_orderdate >= '1995-01-01'::date) AND (orders.o_orderdate <= '1996-12-31'::date))\n            ) AS orders\n    Inner JOIN\n(\n        SELECT lineitem.l_orderkey, lineitem.l_partkey, lineitem.l_suppkey, lineitem.l_linenumber, lineitem.l_quantity, lineitem.l_extendedprice, lineitem.l_discount, lineitem.l_tax, lineitem.l_returnflag, lineitem.l_linestatus, lineitem.l_shipdate, lineitem.l_commitdate, lineitem.l_receiptdate, lineitem.l_shipinstruct, lineitem.l_shipmode, lineitem.l_comment \n        FROM lineitem \n        AS lineitem\n    ) AS lineitem\nON (lineitem.l_orderkey = orders.o_orderkey)\n",
-                "Filename": "_17002268185156660.csv",
-                "Alias": "_17002268185192452",
-                "NodeID": 9,
-                "ParentNodeID": 8
-            },
-            {
-                "Node Type": "Index Scan",
-                "Parent Relationship": "Inner",
-                "Parallel Aware": false,
-                "Async Capable": false,
-                "Scan Direction": "Forward",
-                "Index Name": "part_pkey",
-                "Relation Name": "part",
-                "Schema": "public",
-                "Alias": "part",
-                "Startup Cost": 0.14,
-                "Total Cost": 0.39,
-                "Plan Rows": 1,
-                "Plan Width": 4,
-                "Actual Startup Time": 0.0,
-                "Actual Total Time": 0.0,
-                "Actual Rows": 0,
-                "Actual Loops": 0,
-                "Output": [
-                    "part.p_partkey",
-                    "part.p_name",
-                    "part.p_mfgr",
-                    "part.p_brand",
-                    "part.p_type",
-                    "part.p_size",
-                    "part.p_container",
-                    "part.p_retailprice",
-                    "part.p_comment"
-                ],
-                "Index Cond": "(part.p_partkey = lineitem.l_partkey)",
-                "Rows Removed by Index Recheck": 0,
-                "Filter": "((part.p_type)::text = 'SMALL PLATED COPPER'::text)",
-                "Rows Removed by Filter": 0,
-                "Shared Hit Blocks": 0,
-                "Shared Read Blocks": 0,
-                "Shared Dirtied Blocks": 0,
-                "Shared Written Blocks": 0,
-                "Local Hit Blocks": 0,
-                "Local Read Blocks": 0,
-                "Local Dirtied Blocks": 0,
-                "Local Written Blocks": 0,
-                "Temp Read Blocks": 0,
-                "Temp Written Blocks": 0,
-                "Query": "\n        SELECT part.p_partkey, part.p_name, part.p_mfgr, part.p_brand, part.p_type, part.p_size, part.p_container, part.p_retailprice, part.p_comment \n        FROM part \n        AS part\n    WHERE ((part.p_type)::text = 'SMALL PLATED COPPER'::text)",
-                "Filename": "_17002268185177290.csv",
-                "NodeID": 12,
-                "ParentNodeID": 8
-            }
-        ],
-        "8": [
-            {
-                "Node Type": "Nested Loop",
-                "Parent Relationship": "Outer",
-                "Parallel Aware": false,
-                "Async Capable": false,
-                "Join Type": "Inner",
-                "Startup Cost": 0.29,
-                "Total Cost": 21.95,
-                "Plan Rows": 1,
-                "Plan Width": 48,
-                "Actual Startup Time": 0.023,
-                "Actual Total Time": 0.024,
-                "Actual Rows": 0,
-                "Actual Loops": 1,
-                "Output": [
-                    "lineitem.l_extendedprice",
-                    "lineitem.l_discount",
-                    "lineitem.l_suppkey",
-                    "orders.o_orderdate",
-                    "orders.o_custkey"
-                ],
-                "Inner Unique": true,
-                "Shared Hit Blocks": 0,
-                "Shared Read Blocks": 0,
-                "Shared Dirtied Blocks": 0,
-                "Shared Written Blocks": 0,
-                "Local Hit Blocks": 0,
-                "Local Read Blocks": 0,
-                "Local Dirtied Blocks": 0,
-                "Local Written Blocks": 0,
-                "Temp Read Blocks": 0,
-                "Temp Written Blocks": 0,
-                "Query": "\n        SELECT\n            _17002268185192452.l_extendedprice, _17002268185192452.l_discount, _17002268185192452.l_suppkey, _17002268185192452.o_orderdate, _17002268185192452.o_custkey\n        FROM \n            (\n                \n        SELECT\n            lineitem.l_extendedprice, lineitem.l_discount, lineitem.l_partkey, lineitem.l_suppkey, orders.o_orderdate, orders.o_custkey\n        FROM \n            (\n                \n        SELECT orders.o_orderkey, orders.o_custkey, orders.o_orderstatus, orders.o_totalprice, orders.o_orderdate, orders.o_orderpriority, orders.o_clerk, orders.o_shippriority, orders.o_comment \n        FROM orders \n        AS orders\n    WHERE ((orders.o_orderdate >= '1995-01-01'::date) AND (orders.o_orderdate <= '1996-12-31'::date))\n            ) AS orders\n    Inner JOIN\n(\n        SELECT lineitem.l_orderkey, lineitem.l_partkey, lineitem.l_suppkey, lineitem.l_linenumber, lineitem.l_quantity, lineitem.l_extendedprice, lineitem.l_discount, lineitem.l_tax, lineitem.l_returnflag, lineitem.l_linestatus, lineitem.l_shipdate, lineitem.l_commitdate, lineitem.l_receiptdate, lineitem.l_shipinstruct, lineitem.l_shipmode, lineitem.l_comment \n        FROM lineitem \n        AS lineitem\n    ) AS lineitem\nON (lineitem.l_orderkey = orders.o_orderkey)\n\n            ) AS _17002268185192452\n    Inner JOIN\n(\n        SELECT part.p_partkey, part.p_name, part.p_mfgr, part.p_brand, part.p_type, part.p_size, part.p_container, part.p_retailprice, part.p_comment \n        FROM part \n        AS part\n    WHERE ((part.p_type)::text = 'SMALL PLATED COPPER'::text)) AS part\nON (part.p_partkey = _17002268185192452.l_partkey)\n",
-                "Filename": "_17002268185192640.csv",
-                "Alias": "_17002268185220800",
-                "NodeID": 8,
-                "ParentNodeID": 7
-            },
-            {
-                "Node Type": "Index Scan",
-                "Parent Relationship": "Inner",
-                "Parallel Aware": false,
-                "Async Capable": false,
-                "Scan Direction": "Forward",
-                "Index Name": "supplier_pkey",
                 "Relation Name": "supplier",
                 "Schema": "public",
                 "Alias": "supplier",
-                "Startup Cost": 0.14,
-                "Total Cost": 0.38,
-                "Plan Rows": 1,
-                "Plan Width": 8,
-                "Actual Startup Time": 0.0,
-                "Actual Total Time": 0.0,
+                "Startup Cost": 0.0,
+                "Total Cost": 11.5,
+                "Plan Rows": 150,
+                "Plan Width": 512,
+                "Actual Startup Time": 0.006,
+                "Actual Total Time": 0.006,
                 "Actual Rows": 0,
-                "Actual Loops": 0,
+                "Actual Loops": 1,
                 "Output": [
                     "supplier.s_suppkey",
                     "supplier.s_name",
@@ -254,8 +26,6 @@
                     "supplier.s_acctbal",
                     "supplier.s_comment"
                 ],
-                "Index Cond": "(supplier.s_suppkey = lineitem.l_suppkey)",
-                "Rows Removed by Index Recheck": 0,
                 "Shared Hit Blocks": 0,
                 "Shared Read Blocks": 0,
                 "Shared Dirtied Blocks": 0,
@@ -267,80 +37,32 @@
                 "Temp Read Blocks": 0,
                 "Temp Written Blocks": 0,
                 "Query": "\n        SELECT supplier.s_suppkey, supplier.s_name, supplier.s_address, supplier.s_nationkey, supplier.s_phone, supplier.s_acctbal, supplier.s_comment \n        FROM supplier \n        AS supplier\n    ",
-                "Filename": "_17002268185208540.csv",
-                "NodeID": 13,
-                "ParentNodeID": 7
-            }
-        ],
-        "7": [
-            {
-                "Node Type": "Nested Loop",
-                "Parent Relationship": "Outer",
-                "Parallel Aware": false,
-                "Async Capable": false,
-                "Join Type": "Inner",
-                "Startup Cost": 0.43,
-                "Total Cost": 22.33,
-                "Plan Rows": 1,
-                "Plan Width": 48,
-                "Actual Startup Time": 0.024,
-                "Actual Total Time": 0.025,
-                "Actual Rows": 0,
-                "Actual Loops": 1,
-                "Output": [
-                    "lineitem.l_extendedprice",
-                    "lineitem.l_discount",
-                    "supplier.s_nationkey",
-                    "orders.o_orderdate",
-                    "orders.o_custkey"
-                ],
-                "Inner Unique": true,
-                "Shared Hit Blocks": 0,
-                "Shared Read Blocks": 0,
-                "Shared Dirtied Blocks": 0,
-                "Shared Written Blocks": 0,
-                "Local Hit Blocks": 0,
-                "Local Read Blocks": 0,
-                "Local Dirtied Blocks": 0,
-                "Local Written Blocks": 0,
-                "Temp Read Blocks": 0,
-                "Temp Written Blocks": 0,
-                "Query": "\n        SELECT\n            _17002268185220800.l_extendedprice, _17002268185220800.l_discount, supplier.s_nationkey, _17002268185220800.o_orderdate, _17002268185220800.o_custkey\n        FROM \n            (\n                \n        SELECT\n            _17002268185192452.l_extendedprice, _17002268185192452.l_discount, _17002268185192452.l_suppkey, _17002268185192452.o_orderdate, _17002268185192452.o_custkey\n        FROM \n            (\n                \n        SELECT\n            lineitem.l_extendedprice, lineitem.l_discount, lineitem.l_partkey, lineitem.l_suppkey, orders.o_orderdate, orders.o_custkey\n        FROM \n            (\n                \n        SELECT orders.o_orderkey, orders.o_custkey, orders.o_orderstatus, orders.o_totalprice, orders.o_orderdate, orders.o_orderpriority, orders.o_clerk, orders.o_shippriority, orders.o_comment \n        FROM orders \n        AS orders\n    WHERE ((orders.o_orderdate >= '1995-01-01'::date) AND (orders.o_orderdate <= '1996-12-31'::date))\n            ) AS orders\n    Inner JOIN\n(\n        SELECT lineitem.l_orderkey, lineitem.l_partkey, lineitem.l_suppkey, lineitem.l_linenumber, lineitem.l_quantity, lineitem.l_extendedprice, lineitem.l_discount, lineitem.l_tax, lineitem.l_returnflag, lineitem.l_linestatus, lineitem.l_shipdate, lineitem.l_commitdate, lineitem.l_receiptdate, lineitem.l_shipinstruct, lineitem.l_shipmode, lineitem.l_comment \n        FROM lineitem \n        AS lineitem\n    ) AS lineitem\nON (lineitem.l_orderkey = orders.o_orderkey)\n\n            ) AS _17002268185192452\n    Inner JOIN\n(\n        SELECT part.p_partkey, part.p_name, part.p_mfgr, part.p_brand, part.p_type, part.p_size, part.p_container, part.p_retailprice, part.p_comment \n        FROM part \n        AS part\n    WHERE ((part.p_type)::text = 'SMALL PLATED COPPER'::text)) AS part\nON (part.p_partkey = _17002268185192452.l_partkey)\n\n            ) AS _17002268185220800\n    Inner JOIN\n(\n        SELECT supplier.s_suppkey, supplier.s_name, supplier.s_address, supplier.s_nationkey, supplier.s_phone, supplier.s_acctbal, supplier.s_comment \n        FROM supplier \n        AS supplier\n    ) AS supplier\nON (supplier.s_suppkey = _17002268185220800.l_suppkey)\n",
-                "Filename": "_17002268185220940.csv",
-                "Alias": "_17002268185255950",
-                "NodeID": 7,
-                "ParentNodeID": 6
+                "Filename": "_17002282187107520.csv",
+                "NodeID": 1,
+                "ParentNodeID": 0
             },
             {
-                "Node Type": "Index Scan",
+                "Node Type": "Hash",
                 "Parent Relationship": "Inner",
                 "Parallel Aware": false,
                 "Async Capable": false,
-                "Scan Direction": "Forward",
-                "Index Name": "customer_pkey",
-                "Relation Name": "customer",
-                "Schema": "public",
-                "Alias": "customer",
-                "Startup Cost": 0.14,
-                "Total Cost": 8.16,
-                "Plan Rows": 1,
-                "Plan Width": 8,
+                "Startup Cost": 32.71,
+                "Total Cost": 32.71,
+                "Plan Rows": 170,
+                "Plan Width": 864,
                 "Actual Startup Time": 0.0,
                 "Actual Total Time": 0.0,
                 "Actual Rows": 0,
                 "Actual Loops": 0,
                 "Output": [
-                    "customer.c_custkey",
-                    "customer.c_name",
-                    "customer.c_address",
-                    "customer.c_nationkey",
-                    "customer.c_phone",
-                    "customer.c_acctbal",
-                    "customer.c_mktsegment",
-                    "customer.c_comment"
+                    "nation.n_nationkey",
+                    "nation.n_name",
+                    "nation.n_regionkey",
+                    "nation.n_comment",
+                    "region.r_regionkey",
+                    "region.r_name",
+                    "region.r_comment"
                 ],
-                "Index Cond": "(customer.c_custkey = orders.o_custkey)",
-                "Rows Removed by Index Recheck": 0,
                 "Shared Hit Blocks": 0,
                 "Shared Read Blocks": 0,
                 "Shared Dirtied Blocks": 0,
@@ -351,197 +73,36 @@
                 "Local Written Blocks": 0,
                 "Temp Read Blocks": 0,
                 "Temp Written Blocks": 0,
-                "Query": "\n        SELECT customer.c_custkey, customer.c_name, customer.c_address, customer.c_nationkey, customer.c_phone, customer.c_acctbal, customer.c_mktsegment, customer.c_comment \n        FROM customer \n        AS customer\n    ",
-                "Filename": "_17002268185242822.csv",
-                "NodeID": 14,
-                "ParentNodeID": 6
-            }
-        ],
-        "6": [
-            {
-                "Node Type": "Nested Loop",
-                "Parent Relationship": "Outer",
-                "Parallel Aware": false,
-                "Async Capable": false,
-                "Join Type": "Inner",
-                "Startup Cost": 0.58,
-                "Total Cost": 30.61,
-                "Plan Rows": 1,
-                "Plan Width": 48,
-                "Actual Startup Time": 0.024,
-                "Actual Total Time": 0.025,
-                "Actual Rows": 0,
-                "Actual Loops": 1,
-                "Output": [
-                    "lineitem.l_extendedprice",
-                    "lineitem.l_discount",
-                    "supplier.s_nationkey",
-                    "orders.o_orderdate",
-                    "customer.c_nationkey"
-                ],
-                "Inner Unique": true,
-                "Shared Hit Blocks": 0,
-                "Shared Read Blocks": 0,
-                "Shared Dirtied Blocks": 0,
-                "Shared Written Blocks": 0,
-                "Local Hit Blocks": 0,
-                "Local Read Blocks": 0,
-                "Local Dirtied Blocks": 0,
-                "Local Written Blocks": 0,
-                "Temp Read Blocks": 0,
-                "Temp Written Blocks": 0,
-                "Query": "\n        SELECT\n            _17002268185255950.l_extendedprice, _17002268185255950.l_discount, _17002268185255950.s_nationkey, _17002268185255950.o_orderdate, customer.c_nationkey\n        FROM \n            (\n                \n        SELECT\n            _17002268185220800.l_extendedprice, _17002268185220800.l_discount, supplier.s_nationkey, _17002268185220800.o_orderdate, _17002268185220800.o_custkey\n        FROM \n            (\n                \n        SELECT\n            _17002268185192452.l_extendedprice, _17002268185192452.l_discount, _17002268185192452.l_suppkey, _17002268185192452.o_orderdate, _17002268185192452.o_custkey\n        FROM \n            (\n                \n        SELECT\n            lineitem.l_extendedprice, lineitem.l_discount, lineitem.l_partkey, lineitem.l_suppkey, orders.o_orderdate, orders.o_custkey\n        FROM \n            (\n                \n        SELECT orders.o_orderkey, orders.o_custkey, orders.o_orderstatus, orders.o_totalprice, orders.o_orderdate, orders.o_orderpriority, orders.o_clerk, orders.o_shippriority, orders.o_comment \n        FROM orders \n        AS orders\n    WHERE ((orders.o_orderdate >= '1995-01-01'::date) AND (orders.o_orderdate <= '1996-12-31'::date))\n            ) AS orders\n    Inner JOIN\n(\n        SELECT lineitem.l_orderkey, lineitem.l_partkey, lineitem.l_suppkey, lineitem.l_linenumber, lineitem.l_quantity, lineitem.l_extendedprice, lineitem.l_discount, lineitem.l_tax, lineitem.l_returnflag, lineitem.l_linestatus, lineitem.l_shipdate, lineitem.l_commitdate, lineitem.l_receiptdate, lineitem.l_shipinstruct, lineitem.l_shipmode, lineitem.l_comment \n        FROM lineitem \n        AS lineitem\n    ) AS lineitem\nON (lineitem.l_orderkey = orders.o_orderkey)\n\n            ) AS _17002268185192452\n    Inner JOIN\n(\n        SELECT part.p_partkey, part.p_name, part.p_mfgr, part.p_brand, part.p_type, part.p_size, part.p_container, part.p_retailprice, part.p_comment \n        FROM part \n        AS part\n    WHERE ((part.p_type)::text = 'SMALL PLATED COPPER'::text)) AS part\nON (part.p_partkey = _17002268185192452.l_partkey)\n\n            ) AS _17002268185220800\n    Inner JOIN\n(\n        SELECT supplier.s_suppkey, supplier.s_name, supplier.s_address, supplier.s_nationkey, supplier.s_phone, supplier.s_acctbal, supplier.s_comment \n        FROM supplier \n        AS supplier\n    ) AS supplier\nON (supplier.s_suppkey = _17002268185220800.l_suppkey)\n\n            ) AS _17002268185255950\n    Inner JOIN\n(\n        SELECT customer.c_custkey, customer.c_name, customer.c_address, customer.c_nationkey, customer.c_phone, customer.c_acctbal, customer.c_mktsegment, customer.c_comment \n        FROM customer \n        AS customer\n    ) AS customer\nON (customer.c_custkey = _17002268185255950.o_custkey)\n",
-                "Filename": "_17002268185256090.csv",
-                "Alias": "_17002268185298620",
-                "NodeID": 6,
-                "ParentNodeID": 5
-            },
-            {
-                "Node Type": "Index Scan",
-                "Parent Relationship": "Inner",
-                "Parallel Aware": false,
-                "Async Capable": false,
-                "Scan Direction": "Forward",
-                "Index Name": "nation_pkey",
-                "Relation Name": "nation",
-                "Schema": "public",
-                "Alias": "n1",
-                "Startup Cost": 0.14,
-                "Total Cost": 0.48,
-                "Plan Rows": 1,
-                "Plan Width": 8,
-                "Actual Startup Time": 0.0,
-                "Actual Total Time": 0.0,
-                "Actual Rows": 0,
-                "Actual Loops": 0,
-                "Output": [
-                    "n1.n_nationkey",
-                    "n1.n_name",
-                    "n1.n_regionkey",
-                    "n1.n_comment"
-                ],
-                "Index Cond": "(n1.n_nationkey = customer.c_nationkey)",
-                "Rows Removed by Index Recheck": 0,
-                "Shared Hit Blocks": 0,
-                "Shared Read Blocks": 0,
-                "Shared Dirtied Blocks": 0,
-                "Shared Written Blocks": 0,
-                "Local Hit Blocks": 0,
-                "Local Read Blocks": 0,
-                "Local Dirtied Blocks": 0,
-                "Local Written Blocks": 0,
-                "Temp Read Blocks": 0,
-                "Temp Written Blocks": 0,
-                "Query": "\n        SELECT n1.n_nationkey, n1.n_name, n1.n_regionkey, n1.n_comment \n        FROM nation \n        AS n1\n    ",
-                "Filename": "_17002268185281600.csv",
-                "NodeID": 15,
-                "ParentNodeID": 5
-            }
-        ],
-        "5": [
-            {
-                "Node Type": "Nested Loop",
-                "Parent Relationship": "Outer",
-                "Parallel Aware": false,
-                "Async Capable": false,
-                "Join Type": "Inner",
-                "Startup Cost": 0.72,
-                "Total Cost": 31.09,
-                "Plan Rows": 1,
-                "Plan Width": 48,
-                "Actual Startup Time": 0.024,
-                "Actual Total Time": 0.025,
-                "Actual Rows": 0,
-                "Actual Loops": 1,
-                "Output": [
-                    "lineitem.l_extendedprice",
-                    "lineitem.l_discount",
-                    "supplier.s_nationkey",
-                    "orders.o_orderdate",
-                    "n1.n_regionkey"
-                ],
-                "Inner Unique": true,
-                "Shared Hit Blocks": 0,
-                "Shared Read Blocks": 0,
-                "Shared Dirtied Blocks": 0,
-                "Shared Written Blocks": 0,
-                "Local Hit Blocks": 0,
-                "Local Read Blocks": 0,
-                "Local Dirtied Blocks": 0,
-                "Local Written Blocks": 0,
-                "Temp Read Blocks": 0,
-                "Temp Written Blocks": 0,
-                "Query": "\n        SELECT\n            _17002268185298620.l_extendedprice, _17002268185298620.l_discount, _17002268185298620.s_nationkey, _17002268185298620.o_orderdate, n1.n_regionkey\n        FROM \n            (\n                \n        SELECT\n            _17002268185255950.l_extendedprice, _17002268185255950.l_discount, _17002268185255950.s_nationkey, _17002268185255950.o_orderdate, customer.c_nationkey\n        FROM \n            (\n                \n        SELECT\n            _17002268185220800.l_extendedprice, _17002268185220800.l_discount, supplier.s_nationkey, _17002268185220800.o_orderdate, _17002268185220800.o_custkey\n        FROM \n            (\n                \n        SELECT\n            _17002268185192452.l_extendedprice, _17002268185192452.l_discount, _17002268185192452.l_suppkey, _17002268185192452.o_orderdate, _17002268185192452.o_custkey\n        FROM \n            (\n                \n        SELECT\n            lineitem.l_extendedprice, lineitem.l_discount, lineitem.l_partkey, lineitem.l_suppkey, orders.o_orderdate, orders.o_custkey\n        FROM \n            (\n                \n        SELECT orders.o_orderkey, orders.o_custkey, orders.o_orderstatus, orders.o_totalprice, orders.o_orderdate, orders.o_orderpriority, orders.o_clerk, orders.o_shippriority, orders.o_comment \n        FROM orders \n        AS orders\n    WHERE ((orders.o_orderdate >= '1995-01-01'::date) AND (orders.o_orderdate <= '1996-12-31'::date))\n            ) AS orders\n    Inner JOIN\n(\n        SELECT lineitem.l_orderkey, lineitem.l_partkey, lineitem.l_suppkey, lineitem.l_linenumber, lineitem.l_quantity, lineitem.l_extendedprice, lineitem.l_discount, lineitem.l_tax, lineitem.l_returnflag, lineitem.l_linestatus, lineitem.l_shipdate, lineitem.l_commitdate, lineitem.l_receiptdate, lineitem.l_shipinstruct, lineitem.l_shipmode, lineitem.l_comment \n        FROM lineitem \n        AS lineitem\n    ) AS lineitem\nON (lineitem.l_orderkey = orders.o_orderkey)\n\n            ) AS _17002268185192452\n    Inner JOIN\n(\n        SELECT part.p_partkey, part.p_name, part.p_mfgr, part.p_brand, part.p_type, part.p_size, part.p_container, part.p_retailprice, part.p_comment \n        FROM part \n        AS part\n    WHERE ((part.p_type)::text = 'SMALL PLATED COPPER'::text)) AS part\nON (part.p_partkey = _17002268185192452.l_partkey)\n\n            ) AS _17002268185220800\n    Inner JOIN\n(\n        SELECT supplier.s_suppkey, supplier.s_name, supplier.s_address, supplier.s_nationkey, supplier.s_phone, supplier.s_acctbal, supplier.s_comment \n        FROM supplier \n        AS supplier\n    ) AS supplier\nON (supplier.s_suppkey = _17002268185220800.l_suppkey)\n\n            ) AS _17002268185255950\n    Inner JOIN\n(\n        SELECT customer.c_custkey, customer.c_name, customer.c_address, customer.c_nationkey, customer.c_phone, customer.c_acctbal, customer.c_mktsegment, customer.c_comment \n        FROM customer \n        AS customer\n    ) AS customer\nON (customer.c_custkey = _17002268185255950.o_custkey)\n\n            ) AS _17002268185298620\n    Inner JOIN\n(\n        SELECT n1.n_nationkey, n1.n_name, n1.n_regionkey, n1.n_comment \n        FROM nation \n        AS n1\n    ) AS n1\nON (n1.n_nationkey = _17002268185298620.c_nationkey)\n",
-                "Filename": "_17002268185298848.csv",
-                "Alias": "_17002268185341440",
-                "NodeID": 5,
-                "ParentNodeID": 4
-            },
-            {
-                "Node Type": "Index Scan",
-                "Parent Relationship": "Inner",
-                "Parallel Aware": false,
-                "Async Capable": false,
-                "Scan Direction": "Forward",
-                "Index Name": "nation_pkey",
-                "Relation Name": "nation",
-                "Schema": "public",
-                "Alias": "n2",
-                "Startup Cost": 0.14,
-                "Total Cost": 0.46,
-                "Plan Rows": 1,
-                "Plan Width": 108,
-                "Actual Startup Time": 0.0,
-                "Actual Total Time": 0.0,
-                "Actual Rows": 0,
-                "Actual Loops": 0,
-                "Output": [
-                    "n2.n_nationkey",
-                    "n2.n_name",
-                    "n2.n_regionkey",
-                    "n2.n_comment"
-                ],
-                "Index Cond": "(n2.n_nationkey = supplier.s_nationkey)",
-                "Rows Removed by Index Recheck": 0,
-                "Shared Hit Blocks": 0,
-                "Shared Read Blocks": 0,
-                "Shared Dirtied Blocks": 0,
-                "Shared Written Blocks": 0,
-                "Local Hit Blocks": 0,
-                "Local Read Blocks": 0,
-                "Local Dirtied Blocks": 0,
-                "Local Written Blocks": 0,
-                "Temp Read Blocks": 0,
-                "Temp Written Blocks": 0,
-                "Query": "\n        SELECT n2.n_nationkey, n2.n_name, n2.n_regionkey, n2.n_comment \n        FROM nation \n        AS n2\n    ",
-                "Filename": "_17002268185329700.csv",
-                "NodeID": 16,
-                "ParentNodeID": 4
+                "Query": "\n        SELECT\n            nation.n_nationkey, nation.n_name, nation.n_regionkey, nation.n_comment, region.r_regionkey, region.r_name, region.r_comment\n        FROM \n            (\n                \n        SELECT nation.n_nationkey, nation.n_name, nation.n_regionkey, nation.n_comment \n        FROM nation \n        AS nation\n    \n            ) AS nation\n    Inner JOIN\n(\n        SELECT region.r_regionkey, region.r_name, region.r_comment \n        FROM region \n        AS region\n    ) AS region\nON (nation.n_regionkey = region.r_regionkey)\n\nORDER BY\nn_nationkey",
+                "Alias": "_17002282187269840",
+                "Index Cond": null,
+                "NodeID": 2,
+                "ParentNodeID": 0
             }
         ],
         "4": [
             {
-                "Node Type": "Nested Loop",
+                "Node Type": "Seq Scan",
                 "Parent Relationship": "Outer",
                 "Parallel Aware": false,
                 "Async Capable": false,
-                "Join Type": "Inner",
-                "Startup Cost": 0.87,
-                "Total Cost": 31.55,
-                "Plan Rows": 1,
-                "Plan Width": 148,
-                "Actual Startup Time": 0.024,
-                "Actual Total Time": 0.026,
+                "Relation Name": "nation",
+                "Schema": "public",
+                "Alias": "nation",
+                "Startup Cost": 0.0,
+                "Total Cost": 11.7,
+                "Plan Rows": 170,
+                "Plan Width": 434,
+                "Actual Startup Time": 0.0,
+                "Actual Total Time": 0.0,
                 "Actual Rows": 0,
-                "Actual Loops": 1,
+                "Actual Loops": 0,
                 "Output": [
-                    "lineitem.l_extendedprice",
-                    "lineitem.l_discount",
-                    "orders.o_orderdate",
-                    "n1.n_regionkey",
-                    "n2.n_name"
+                    "nation.n_nationkey",
+                    "nation.n_name",
+                    "nation.n_regionkey",
+                    "nation.n_comment"
                 ],
-                "Inner Unique": true,
                 "Shared Hit Blocks": 0,
                 "Shared Read Blocks": 0,
                 "Shared Dirtied Blocks": 0,
@@ -552,26 +113,20 @@
                 "Local Written Blocks": 0,
                 "Temp Read Blocks": 0,
                 "Temp Written Blocks": 0,
-                "Query": "\n        SELECT\n            _17002268185341440.l_extendedprice, _17002268185341440.l_discount, _17002268185341440.o_orderdate, _17002268185341440.n_regionkey, n2.n_name\n        FROM \n            (\n                \n        SELECT\n            _17002268185298620.l_extendedprice, _17002268185298620.l_discount, _17002268185298620.s_nationkey, _17002268185298620.o_orderdate, n1.n_regionkey\n        FROM \n            (\n                \n        SELECT\n            _17002268185255950.l_extendedprice, _17002268185255950.l_discount, _17002268185255950.s_nationkey, _17002268185255950.o_orderdate, customer.c_nationkey\n        FROM \n            (\n                \n        SELECT\n            _17002268185220800.l_extendedprice, _17002268185220800.l_discount, supplier.s_nationkey, _17002268185220800.o_orderdate, _17002268185220800.o_custkey\n        FROM \n            (\n                \n        SELECT\n            _17002268185192452.l_extendedprice, _17002268185192452.l_discount, _17002268185192452.l_suppkey, _17002268185192452.o_orderdate, _17002268185192452.o_custkey\n        FROM \n            (\n                \n        SELECT\n            lineitem.l_extendedprice, lineitem.l_discount, lineitem.l_partkey, lineitem.l_suppkey, orders.o_orderdate, orders.o_custkey\n        FROM \n            (\n                \n        SELECT orders.o_orderkey, orders.o_custkey, orders.o_orderstatus, orders.o_totalprice, orders.o_orderdate, orders.o_orderpriority, orders.o_clerk, orders.o_shippriority, orders.o_comment \n        FROM orders \n        AS orders\n    WHERE ((orders.o_orderdate >= '1995-01-01'::date) AND (orders.o_orderdate <= '1996-12-31'::date))\n            ) AS orders\n    Inner JOIN\n(\n        SELECT lineitem.l_orderkey, lineitem.l_partkey, lineitem.l_suppkey, lineitem.l_linenumber, lineitem.l_quantity, lineitem.l_extendedprice, lineitem.l_discount, lineitem.l_tax, lineitem.l_returnflag, lineitem.l_linestatus, lineitem.l_shipdate, lineitem.l_commitdate, lineitem.l_receiptdate, lineitem.l_shipinstruct, lineitem.l_shipmode, lineitem.l_comment \n        FROM lineitem \n        AS lineitem\n    ) AS lineitem\nON (lineitem.l_orderkey = orders.o_orderkey)\n\n            ) AS _17002268185192452\n    Inner JOIN\n(\n        SELECT part.p_partkey, part.p_name, part.p_mfgr, part.p_brand, part.p_type, part.p_size, part.p_container, part.p_retailprice, part.p_comment \n        FROM part \n        AS part\n    WHERE ((part.p_type)::text = 'SMALL PLATED COPPER'::text)) AS part\nON (part.p_partkey = _17002268185192452.l_partkey)\n\n            ) AS _17002268185220800\n    Inner JOIN\n(\n        SELECT supplier.s_suppkey, supplier.s_name, supplier.s_address, supplier.s_nationkey, supplier.s_phone, supplier.s_acctbal, supplier.s_comment \n        FROM supplier \n        AS supplier\n    ) AS supplier\nON (supplier.s_suppkey = _17002268185220800.l_suppkey)\n\n            ) AS _17002268185255950\n    Inner JOIN\n(\n        SELECT customer.c_custkey, customer.c_name, customer.c_address, customer.c_nationkey, customer.c_phone, customer.c_acctbal, customer.c_mktsegment, customer.c_comment \n        FROM customer \n        AS customer\n    ) AS customer\nON (customer.c_custkey = _17002268185255950.o_custkey)\n\n            ) AS _17002268185298620\n    Inner JOIN\n(\n        SELECT n1.n_nationkey, n1.n_name, n1.n_regionkey, n1.n_comment \n        FROM nation \n        AS n1\n    ) AS n1\nON (n1.n_nationkey = _17002268185298620.c_nationkey)\n\n            ) AS _17002268185341440\n    Inner JOIN\n(\n        SELECT n2.n_nationkey, n2.n_name, n2.n_regionkey, n2.n_comment \n        FROM nation \n        AS n2\n    ) AS n2\nON (n2.n_nationkey = _17002268185341440.s_nationkey)\n",
-                "Filename": "_17002268185341580.csv",
-                "Alias": "_17002268185374780",
-                "NodeID": 4,
-                "ParentNodeID": 3
+                "Query": "\n        SELECT nation.n_nationkey, nation.n_name, nation.n_regionkey, nation.n_comment \n        FROM nation \n        AS nation\n    ",
+                "Filename": "_17002282187141900.csv",
+                "NodeID": 5,
+                "ParentNodeID": 4
             },
             {
-                "Node Type": "Index Scan",
+                "Node Type": "Hash",
                 "Parent Relationship": "Inner",
                 "Parallel Aware": false,
                 "Async Capable": false,
-                "Scan Direction": "Forward",
-                "Index Name": "region_pkey",
-                "Relation Name": "region",
-                "Schema": "public",
-                "Alias": "region",
-                "Startup Cost": 0.14,
-                "Total Cost": 0.42,
-                "Plan Rows": 1,
-                "Plan Width": 4,
+                "Startup Cost": 11.7,
+                "Total Cost": 11.7,
+                "Plan Rows": 170,
+                "Plan Width": 430,
                 "Actual Startup Time": 0.0,
                 "Actual Total Time": 0.0,
                 "Actual Rows": 0,
@@ -581,10 +136,6 @@
                     "region.r_name",
                     "region.r_comment"
                 ],
-                "Index Cond": "(region.r_regionkey = n1.n_regionkey)",
-                "Rows Removed by Index Recheck": 0,
-                "Filter": "(region.r_name = 'ASIA'::bpchar)",
-                "Rows Removed by Filter": 0,
                 "Shared Hit Blocks": 0,
                 "Shared Read Blocks": 0,
                 "Shared Dirtied Blocks": 0,
@@ -595,34 +146,77 @@
                 "Local Written Blocks": 0,
                 "Temp Read Blocks": 0,
                 "Temp Written Blocks": 0,
-                "Query": "\n        SELECT region.r_regionkey, region.r_name, region.r_comment \n        FROM region \n        AS region\n    WHERE (region.r_name = 'ASIA'::bpchar)",
-                "Filename": "_17002268185364030.csv",
-                "NodeID": 17,
-                "ParentNodeID": 3
+                "Query": "\n        SELECT region.r_regionkey, region.r_name, region.r_comment \n        FROM region \n        AS region\n    ",
+                "Alias": "region",
+                "Index Cond": null,
+                "NodeID": 6,
+                "ParentNodeID": 4
+            }
+        ],
+        "5": [
+            {
+                "Node Type": "Seq Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "region",
+                "Schema": "public",
+                "Alias": "region",
+                "Startup Cost": 0.0,
+                "Total Cost": 11.7,
+                "Plan Rows": 170,
+                "Plan Width": 430,
+                "Actual Startup Time": 0.0,
+                "Actual Total Time": 0.0,
+                "Actual Rows": 0,
+                "Actual Loops": 0,
+                "Output": [
+                    "region.r_regionkey",
+                    "region.r_name",
+                    "region.r_comment"
+                ],
+                "Shared Hit Blocks": 0,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0,
+                "Query": "\n        SELECT region.r_regionkey, region.r_name, region.r_comment \n        FROM region \n        AS region\n    ",
+                "Filename": "_17002282187167730.csv",
+                "NodeID": 7,
+                "ParentNodeID": 6
             }
         ],
         "3": [
             {
-                "Node Type": "Nested Loop",
+                "Node Type": "Hash Join",
                 "Parent Relationship": "Outer",
                 "Parallel Aware": false,
                 "Async Capable": false,
                 "Join Type": "Inner",
-                "Startup Cost": 1.01,
-                "Total Cost": 32.25,
-                "Plan Rows": 1,
-                "Plan Width": 144,
-                "Actual Startup Time": 0.025,
-                "Actual Total Time": 0.027,
+                "Startup Cost": 13.82,
+                "Total Cost": 25.98,
+                "Plan Rows": 170,
+                "Plan Width": 864,
+                "Actual Startup Time": 0.0,
+                "Actual Total Time": 0.0,
                 "Actual Rows": 0,
-                "Actual Loops": 1,
+                "Actual Loops": 0,
                 "Output": [
-                    "orders.o_orderdate",
-                    "n2.n_name",
-                    "lineitem.l_extendedprice",
-                    "lineitem.l_discount"
+                    "nation.n_nationkey",
+                    "nation.n_name",
+                    "nation.n_regionkey",
+                    "nation.n_comment",
+                    "region.r_regionkey",
+                    "region.r_name",
+                    "region.r_comment"
                 ],
                 "Inner Unique": true,
+                "Hash Cond": "(nation.n_regionkey = region.r_regionkey)",
                 "Shared Hit Blocks": 0,
                 "Shared Read Blocks": 0,
                 "Shared Dirtied Blocks": 0,
@@ -633,10 +227,10 @@
                 "Local Written Blocks": 0,
                 "Temp Read Blocks": 0,
                 "Temp Written Blocks": 0,
-                "Query": "\n        SELECT\n            _17002268185374780.o_orderdate, _17002268185374780.n_name, _17002268185374780.l_extendedprice, _17002268185374780.l_discount\n        FROM \n            (\n                \n        SELECT\n            _17002268185341440.l_extendedprice, _17002268185341440.l_discount, _17002268185341440.o_orderdate, _17002268185341440.n_regionkey, n2.n_name\n        FROM \n            (\n                \n        SELECT\n            _17002268185298620.l_extendedprice, _17002268185298620.l_discount, _17002268185298620.s_nationkey, _17002268185298620.o_orderdate, n1.n_regionkey\n        FROM \n            (\n                \n        SELECT\n            _17002268185255950.l_extendedprice, _17002268185255950.l_discount, _17002268185255950.s_nationkey, _17002268185255950.o_orderdate, customer.c_nationkey\n        FROM \n            (\n                \n        SELECT\n            _17002268185220800.l_extendedprice, _17002268185220800.l_discount, supplier.s_nationkey, _17002268185220800.o_orderdate, _17002268185220800.o_custkey\n        FROM \n            (\n                \n        SELECT\n            _17002268185192452.l_extendedprice, _17002268185192452.l_discount, _17002268185192452.l_suppkey, _17002268185192452.o_orderdate, _17002268185192452.o_custkey\n        FROM \n            (\n                \n        SELECT\n            lineitem.l_extendedprice, lineitem.l_discount, lineitem.l_partkey, lineitem.l_suppkey, orders.o_orderdate, orders.o_custkey\n        FROM \n            (\n                \n        SELECT orders.o_orderkey, orders.o_custkey, orders.o_orderstatus, orders.o_totalprice, orders.o_orderdate, orders.o_orderpriority, orders.o_clerk, orders.o_shippriority, orders.o_comment \n        FROM orders \n        AS orders\n    WHERE ((orders.o_orderdate >= '1995-01-01'::date) AND (orders.o_orderdate <= '1996-12-31'::date))\n            ) AS orders\n    Inner JOIN\n(\n        SELECT lineitem.l_orderkey, lineitem.l_partkey, lineitem.l_suppkey, lineitem.l_linenumber, lineitem.l_quantity, lineitem.l_extendedprice, lineitem.l_discount, lineitem.l_tax, lineitem.l_returnflag, lineitem.l_linestatus, lineitem.l_shipdate, lineitem.l_commitdate, lineitem.l_receiptdate, lineitem.l_shipinstruct, lineitem.l_shipmode, lineitem.l_comment \n        FROM lineitem \n        AS lineitem\n    ) AS lineitem\nON (lineitem.l_orderkey = orders.o_orderkey)\n\n            ) AS _17002268185192452\n    Inner JOIN\n(\n        SELECT part.p_partkey, part.p_name, part.p_mfgr, part.p_brand, part.p_type, part.p_size, part.p_container, part.p_retailprice, part.p_comment \n        FROM part \n        AS part\n    WHERE ((part.p_type)::text = 'SMALL PLATED COPPER'::text)) AS part\nON (part.p_partkey = _17002268185192452.l_partkey)\n\n            ) AS _17002268185220800\n    Inner JOIN\n(\n        SELECT supplier.s_suppkey, supplier.s_name, supplier.s_address, supplier.s_nationkey, supplier.s_phone, supplier.s_acctbal, supplier.s_comment \n        FROM supplier \n        AS supplier\n    ) AS supplier\nON (supplier.s_suppkey = _17002268185220800.l_suppkey)\n\n            ) AS _17002268185255950\n    Inner JOIN\n(\n        SELECT customer.c_custkey, customer.c_name, customer.c_address, customer.c_nationkey, customer.c_phone, customer.c_acctbal, customer.c_mktsegment, customer.c_comment \n        FROM customer \n        AS customer\n    ) AS customer\nON (customer.c_custkey = _17002268185255950.o_custkey)\n\n            ) AS _17002268185298620\n    Inner JOIN\n(\n        SELECT n1.n_nationkey, n1.n_name, n1.n_regionkey, n1.n_comment \n        FROM nation \n        AS n1\n    ) AS n1\nON (n1.n_nationkey = _17002268185298620.c_nationkey)\n\n            ) AS _17002268185341440\n    Inner JOIN\n(\n        SELECT n2.n_nationkey, n2.n_name, n2.n_regionkey, n2.n_comment \n        FROM nation \n        AS n2\n    ) AS n2\nON (n2.n_nationkey = _17002268185341440.s_nationkey)\n\n            ) AS _17002268185374780\n    Inner JOIN\n(\n        SELECT region.r_regionkey, region.r_name, region.r_comment \n        FROM region \n        AS region\n    WHERE (region.r_name = 'ASIA'::bpchar)) AS region\nON (region.r_regionkey = _17002268185374780.n_regionkey)\n",
-                "Filename": "_17002268185374898.csv",
-                "NodeID": 3,
-                "ParentNodeID": 2
+                "Query": "\n        SELECT\n            nation.n_nationkey, nation.n_name, nation.n_regionkey, nation.n_comment, region.r_regionkey, region.r_name, region.r_comment\n        FROM \n            (\n                \n        SELECT nation.n_nationkey, nation.n_name, nation.n_regionkey, nation.n_comment \n        FROM nation \n        AS nation\n    \n            ) AS nation\n    Inner JOIN\n(\n        SELECT region.r_regionkey, region.r_name, region.r_comment \n        FROM region \n        AS region\n    ) AS region\nON (nation.n_regionkey = region.r_regionkey)\n",
+                "Filename": "_17002282187183620.csv",
+                "NodeID": 4,
+                "ParentNodeID": 3
             }
         ],
         "2": [
@@ -645,27 +239,27 @@
                 "Parent Relationship": "Outer",
                 "Parallel Aware": false,
                 "Async Capable": false,
-                "Startup Cost": 32.26,
-                "Total Cost": 32.27,
-                "Plan Rows": 1,
-                "Plan Width": 144,
-                "Actual Startup Time": 0.124,
-                "Actual Total Time": 0.126,
+                "Startup Cost": 32.28,
+                "Total Cost": 32.71,
+                "Plan Rows": 170,
+                "Plan Width": 864,
+                "Actual Startup Time": 0.0,
+                "Actual Total Time": 0.0,
                 "Actual Rows": 0,
-                "Actual Loops": 1,
+                "Actual Loops": 0,
                 "Output": [
-                    "orders.o_orderdate",
-                    "n2.n_name",
-                    "lineitem.l_extendedprice",
-                    "lineitem.l_discount"
+                    "nation.n_nationkey",
+                    "nation.n_name",
+                    "nation.n_regionkey",
+                    "nation.n_comment",
+                    "region.r_regionkey",
+                    "region.r_name",
+                    "region.r_comment"
                 ],
                 "Sort Key": [
-                    "orders.o_orderdate"
+                    "nation.n_nationkey"
                 ],
-                "Sort Method": "quicksort",
-                "Sort Space Used": 25,
-                "Sort Space Type": "Memory",
-                "Shared Hit Blocks": 3,
+                "Shared Hit Blocks": 0,
                 "Shared Read Blocks": 0,
                 "Shared Dirtied Blocks": 0,
                 "Shared Written Blocks": 0,
@@ -675,69 +269,45 @@
                 "Local Written Blocks": 0,
                 "Temp Read Blocks": 0,
                 "Temp Written Blocks": 0,
-                "Query": "\n        SELECT\n            _17002268185374780.o_orderdate, _17002268185374780.n_name, _17002268185374780.l_extendedprice, _17002268185374780.l_discount\n        FROM \n            (\n                \n        SELECT\n            _17002268185341440.l_extendedprice, _17002268185341440.l_discount, _17002268185341440.o_orderdate, _17002268185341440.n_regionkey, n2.n_name\n        FROM \n            (\n                \n        SELECT\n            _17002268185298620.l_extendedprice, _17002268185298620.l_discount, _17002268185298620.s_nationkey, _17002268185298620.o_orderdate, n1.n_regionkey\n        FROM \n            (\n                \n        SELECT\n            _17002268185255950.l_extendedprice, _17002268185255950.l_discount, _17002268185255950.s_nationkey, _17002268185255950.o_orderdate, customer.c_nationkey\n        FROM \n            (\n                \n        SELECT\n            _17002268185220800.l_extendedprice, _17002268185220800.l_discount, supplier.s_nationkey, _17002268185220800.o_orderdate, _17002268185220800.o_custkey\n        FROM \n            (\n                \n        SELECT\n            _17002268185192452.l_extendedprice, _17002268185192452.l_discount, _17002268185192452.l_suppkey, _17002268185192452.o_orderdate, _17002268185192452.o_custkey\n        FROM \n            (\n                \n        SELECT\n            lineitem.l_extendedprice, lineitem.l_discount, lineitem.l_partkey, lineitem.l_suppkey, orders.o_orderdate, orders.o_custkey\n        FROM \n            (\n                \n        SELECT orders.o_orderkey, orders.o_custkey, orders.o_orderstatus, orders.o_totalprice, orders.o_orderdate, orders.o_orderpriority, orders.o_clerk, orders.o_shippriority, orders.o_comment \n        FROM orders \n        AS orders\n    WHERE ((orders.o_orderdate >= '1995-01-01'::date) AND (orders.o_orderdate <= '1996-12-31'::date))\n            ) AS orders\n    Inner JOIN\n(\n        SELECT lineitem.l_orderkey, lineitem.l_partkey, lineitem.l_suppkey, lineitem.l_linenumber, lineitem.l_quantity, lineitem.l_extendedprice, lineitem.l_discount, lineitem.l_tax, lineitem.l_returnflag, lineitem.l_linestatus, lineitem.l_shipdate, lineitem.l_commitdate, lineitem.l_receiptdate, lineitem.l_shipinstruct, lineitem.l_shipmode, lineitem.l_comment \n        FROM lineitem \n        AS lineitem\n    ) AS lineitem\nON (lineitem.l_orderkey = orders.o_orderkey)\n\n            ) AS _17002268185192452\n    Inner JOIN\n(\n        SELECT part.p_partkey, part.p_name, part.p_mfgr, part.p_brand, part.p_type, part.p_size, part.p_container, part.p_retailprice, part.p_comment \n        FROM part \n        AS part\n    WHERE ((part.p_type)::text = 'SMALL PLATED COPPER'::text)) AS part\nON (part.p_partkey = _17002268185192452.l_partkey)\n\n            ) AS _17002268185220800\n    Inner JOIN\n(\n        SELECT supplier.s_suppkey, supplier.s_name, supplier.s_address, supplier.s_nationkey, supplier.s_phone, supplier.s_acctbal, supplier.s_comment \n        FROM supplier \n        AS supplier\n    ) AS supplier\nON (supplier.s_suppkey = _17002268185220800.l_suppkey)\n\n            ) AS _17002268185255950\n    Inner JOIN\n(\n        SELECT customer.c_custkey, customer.c_name, customer.c_address, customer.c_nationkey, customer.c_phone, customer.c_acctbal, customer.c_mktsegment, customer.c_comment \n        FROM customer \n        AS customer\n    ) AS customer\nON (customer.c_custkey = _17002268185255950.o_custkey)\n\n            ) AS _17002268185298620\n    Inner JOIN\n(\n        SELECT n1.n_nationkey, n1.n_name, n1.n_regionkey, n1.n_comment \n        FROM nation \n        AS n1\n    ) AS n1\nON (n1.n_nationkey = _17002268185298620.c_nationkey)\n\n            ) AS _17002268185341440\n    Inner JOIN\n(\n        SELECT n2.n_nationkey, n2.n_name, n2.n_regionkey, n2.n_comment \n        FROM nation \n        AS n2\n    ) AS n2\nON (n2.n_nationkey = _17002268185341440.s_nationkey)\n\n            ) AS _17002268185374780\n    Inner JOIN\n(\n        SELECT region.r_regionkey, region.r_name, region.r_comment \n        FROM region \n        AS region\n    WHERE (region.r_name = 'ASIA'::bpchar)) AS region\nON (region.r_regionkey = _17002268185374780.n_regionkey)\n\nORDER BY\no_orderdate",
-                "Filename": "_17002268185405728.csv",
-                "NodeID": 2,
-                "ParentNodeID": 1
-            }
-        ],
-        "1": [
-            {
-                "Node Type": "Aggregate",
-                "Strategy": "Sorted",
-                "Partial Mode": "Simple",
-                "Parent Relationship": "Outer",
-                "Parallel Aware": false,
-                "Async Capable": false,
-                "Startup Cost": 32.26,
-                "Total Cost": 32.3,
-                "Plan Rows": 1,
-                "Plan Width": 36,
-                "Actual Startup Time": 0.126,
-                "Actual Total Time": 0.128,
-                "Actual Rows": 0,
-                "Actual Loops": 1,
-                "Output": [
-                    "orders.o_orderdate",
-                    "(sum(CASE WHEN (n2.n_name = 'INDIA'::bpchar) THEN (lineitem.l_extendedprice * ('1'::numeric - lineitem.l_discount)) ELSE '0'::numeric END) / sum((lineitem.l_extendedprice * ('1'::numeric - lineitem.l_discount))))"
-                ],
-                "Group Key": [
-                    "orders.o_orderdate"
-                ],
-                "Shared Hit Blocks": 3,
-                "Shared Read Blocks": 0,
-                "Shared Dirtied Blocks": 0,
-                "Shared Written Blocks": 0,
-                "Local Hit Blocks": 0,
-                "Local Read Blocks": 0,
-                "Local Dirtied Blocks": 0,
-                "Local Written Blocks": 0,
-                "Temp Read Blocks": 0,
-                "Temp Written Blocks": 0,
-                "Query": "\n        SELECT \n            _17002268185433778.o_orderdate, (sum(CASE WHEN (_17002268185433778.n_name = 'INDIA'::bpchar) THEN (_17002268185433778.l_extendedprice * ('1'::numeric - _17002268185433778.l_discount)) ELSE '0'::numeric END) / sum((_17002268185433778.l_extendedprice * ('1'::numeric - _17002268185433778.l_discount)))) \n        FROM \n            (\n                \n        SELECT\n            _17002268185374780.o_orderdate, _17002268185374780.n_name, _17002268185374780.l_extendedprice, _17002268185374780.l_discount\n        FROM \n            (\n                \n        SELECT\n            _17002268185341440.l_extendedprice, _17002268185341440.l_discount, _17002268185341440.o_orderdate, _17002268185341440.n_regionkey, n2.n_name\n        FROM \n            (\n                \n        SELECT\n            _17002268185298620.l_extendedprice, _17002268185298620.l_discount, _17002268185298620.s_nationkey, _17002268185298620.o_orderdate, n1.n_regionkey\n        FROM \n            (\n                \n        SELECT\n            _17002268185255950.l_extendedprice, _17002268185255950.l_discount, _17002268185255950.s_nationkey, _17002268185255950.o_orderdate, customer.c_nationkey\n        FROM \n            (\n                \n        SELECT\n            _17002268185220800.l_extendedprice, _17002268185220800.l_discount, supplier.s_nationkey, _17002268185220800.o_orderdate, _17002268185220800.o_custkey\n        FROM \n            (\n                \n        SELECT\n            _17002268185192452.l_extendedprice, _17002268185192452.l_discount, _17002268185192452.l_suppkey, _17002268185192452.o_orderdate, _17002268185192452.o_custkey\n        FROM \n            (\n                \n        SELECT\n            lineitem.l_extendedprice, lineitem.l_discount, lineitem.l_partkey, lineitem.l_suppkey, orders.o_orderdate, orders.o_custkey\n        FROM \n            (\n                \n        SELECT orders.o_orderkey, orders.o_custkey, orders.o_orderstatus, orders.o_totalprice, orders.o_orderdate, orders.o_orderpriority, orders.o_clerk, orders.o_shippriority, orders.o_comment \n        FROM orders \n        AS orders\n    WHERE ((orders.o_orderdate >= '1995-01-01'::date) AND (orders.o_orderdate <= '1996-12-31'::date))\n            ) AS orders\n    Inner JOIN\n(\n        SELECT lineitem.l_orderkey, lineitem.l_partkey, lineitem.l_suppkey, lineitem.l_linenumber, lineitem.l_quantity, lineitem.l_extendedprice, lineitem.l_discount, lineitem.l_tax, lineitem.l_returnflag, lineitem.l_linestatus, lineitem.l_shipdate, lineitem.l_commitdate, lineitem.l_receiptdate, lineitem.l_shipinstruct, lineitem.l_shipmode, lineitem.l_comment \n        FROM lineitem \n        AS lineitem\n    ) AS lineitem\nON (lineitem.l_orderkey = orders.o_orderkey)\n\n            ) AS _17002268185192452\n    Inner JOIN\n(\n        SELECT part.p_partkey, part.p_name, part.p_mfgr, part.p_brand, part.p_type, part.p_size, part.p_container, part.p_retailprice, part.p_comment \n        FROM part \n        AS part\n    WHERE ((part.p_type)::text = 'SMALL PLATED COPPER'::text)) AS part\nON (part.p_partkey = _17002268185192452.l_partkey)\n\n            ) AS _17002268185220800\n    Inner JOIN\n(\n        SELECT supplier.s_suppkey, supplier.s_name, supplier.s_address, supplier.s_nationkey, supplier.s_phone, supplier.s_acctbal, supplier.s_comment \n        FROM supplier \n        AS supplier\n    ) AS supplier\nON (supplier.s_suppkey = _17002268185220800.l_suppkey)\n\n            ) AS _17002268185255950\n    Inner JOIN\n(\n        SELECT customer.c_custkey, customer.c_name, customer.c_address, customer.c_nationkey, customer.c_phone, customer.c_acctbal, customer.c_mktsegment, customer.c_comment \n        FROM customer \n        AS customer\n    ) AS customer\nON (customer.c_custkey = _17002268185255950.o_custkey)\n\n            ) AS _17002268185298620\n    Inner JOIN\n(\n        SELECT n1.n_nationkey, n1.n_name, n1.n_regionkey, n1.n_comment \n        FROM nation \n        AS n1\n    ) AS n1\nON (n1.n_nationkey = _17002268185298620.c_nationkey)\n\n            ) AS _17002268185341440\n    Inner JOIN\n(\n        SELECT n2.n_nationkey, n2.n_name, n2.n_regionkey, n2.n_comment \n        FROM nation \n        AS n2\n    ) AS n2\nON (n2.n_nationkey = _17002268185341440.s_nationkey)\n\n            ) AS _17002268185374780\n    Inner JOIN\n(\n        SELECT region.r_regionkey, region.r_name, region.r_comment \n        FROM region \n        AS region\n    WHERE (region.r_name = 'ASIA'::bpchar)) AS region\nON (region.r_regionkey = _17002268185374780.n_regionkey)\n\nORDER BY\no_orderdate\n            ) AS _17002268185433778\n        GROUP BY _17002268185433778.o_orderdate\n    ",
-                "Filename": "_17002268185434020.csv",
-                "NodeID": 1,
-                "ParentNodeID": 0
+                "Query": "\n        SELECT\n            nation.n_nationkey, nation.n_name, nation.n_regionkey, nation.n_comment, region.r_regionkey, region.r_name, region.r_comment\n        FROM \n            (\n                \n        SELECT nation.n_nationkey, nation.n_name, nation.n_regionkey, nation.n_comment \n        FROM nation \n        AS nation\n    \n            ) AS nation\n    Inner JOIN\n(\n        SELECT region.r_regionkey, region.r_name, region.r_comment \n        FROM region \n        AS region\n    ) AS region\nON (nation.n_regionkey = region.r_regionkey)\n\nORDER BY\nn_nationkey",
+                "Filename": "_17002282187238360.csv",
+                "NodeID": 3,
+                "ParentNodeID": 2
             }
         ],
         "0": [
             {
-                "Node Type": "Limit",
+                "Node Type": "Hash Join",
                 "Parallel Aware": false,
                 "Async Capable": false,
-                "Startup Cost": 32.26,
-                "Total Cost": 32.3,
-                "Plan Rows": 1,
-                "Plan Width": 36,
-                "Actual Startup Time": 0.128,
-                "Actual Total Time": 0.131,
+                "Join Type": "Inner",
+                "Startup Cost": 34.83,
+                "Total Cost": 48.39,
+                "Plan Rows": 150,
+                "Plan Width": 1376,
+                "Actual Startup Time": 0.007,
+                "Actual Total Time": 0.008,
                 "Actual Rows": 0,
                 "Actual Loops": 1,
                 "Output": [
-                    "orders.o_orderdate",
-                    "((sum(CASE WHEN (n2.n_name = 'INDIA'::bpchar) THEN (lineitem.l_extendedprice * ('1'::numeric - lineitem.l_discount)) ELSE '0'::numeric END) / sum((lineitem.l_extendedprice * ('1'::numeric - lineitem.l_discount)))))"
+                    "nation.n_nationkey",
+                    "nation.n_name",
+                    "nation.n_regionkey",
+                    "nation.n_comment",
+                    "region.r_regionkey",
+                    "region.r_name",
+                    "region.r_comment",
+                    "supplier.s_suppkey",
+                    "supplier.s_name",
+                    "supplier.s_address",
+                    "supplier.s_nationkey",
+                    "supplier.s_phone",
+                    "supplier.s_acctbal",
+                    "supplier.s_comment"
                 ],
-                "Shared Hit Blocks": 3,
+                "Inner Unique": false,
+                "Hash Cond": "(supplier.s_nationkey = nation.n_nationkey)",
+                "Shared Hit Blocks": 0,
                 "Shared Read Blocks": 0,
                 "Shared Dirtied Blocks": 0,
                 "Shared Written Blocks": 0,
@@ -747,16 +317,16 @@
                 "Local Written Blocks": 0,
                 "Temp Read Blocks": 0,
                 "Temp Written Blocks": 0,
-                "Query": "\n        SELECT \n            _17002268185433778.o_orderdate, (sum(CASE WHEN (_17002268185433778.n_name = 'INDIA'::bpchar) THEN (_17002268185433778.l_extendedprice * ('1'::numeric - _17002268185433778.l_discount)) ELSE '0'::numeric END) / sum((_17002268185433778.l_extendedprice * ('1'::numeric - _17002268185433778.l_discount)))) \n        FROM \n            (\n                \n        SELECT\n            _17002268185374780.o_orderdate, _17002268185374780.n_name, _17002268185374780.l_extendedprice, _17002268185374780.l_discount\n        FROM \n            (\n                \n        SELECT\n            _17002268185341440.l_extendedprice, _17002268185341440.l_discount, _17002268185341440.o_orderdate, _17002268185341440.n_regionkey, n2.n_name\n        FROM \n            (\n                \n        SELECT\n            _17002268185298620.l_extendedprice, _17002268185298620.l_discount, _17002268185298620.s_nationkey, _17002268185298620.o_orderdate, n1.n_regionkey\n        FROM \n            (\n                \n        SELECT\n            _17002268185255950.l_extendedprice, _17002268185255950.l_discount, _17002268185255950.s_nationkey, _17002268185255950.o_orderdate, customer.c_nationkey\n        FROM \n            (\n                \n        SELECT\n            _17002268185220800.l_extendedprice, _17002268185220800.l_discount, supplier.s_nationkey, _17002268185220800.o_orderdate, _17002268185220800.o_custkey\n        FROM \n            (\n                \n        SELECT\n            _17002268185192452.l_extendedprice, _17002268185192452.l_discount, _17002268185192452.l_suppkey, _17002268185192452.o_orderdate, _17002268185192452.o_custkey\n        FROM \n            (\n                \n        SELECT\n            lineitem.l_extendedprice, lineitem.l_discount, lineitem.l_partkey, lineitem.l_suppkey, orders.o_orderdate, orders.o_custkey\n        FROM \n            (\n                \n        SELECT orders.o_orderkey, orders.o_custkey, orders.o_orderstatus, orders.o_totalprice, orders.o_orderdate, orders.o_orderpriority, orders.o_clerk, orders.o_shippriority, orders.o_comment \n        FROM orders \n        AS orders\n    WHERE ((orders.o_orderdate >= '1995-01-01'::date) AND (orders.o_orderdate <= '1996-12-31'::date))\n            ) AS orders\n    Inner JOIN\n(\n        SELECT lineitem.l_orderkey, lineitem.l_partkey, lineitem.l_suppkey, lineitem.l_linenumber, lineitem.l_quantity, lineitem.l_extendedprice, lineitem.l_discount, lineitem.l_tax, lineitem.l_returnflag, lineitem.l_linestatus, lineitem.l_shipdate, lineitem.l_commitdate, lineitem.l_receiptdate, lineitem.l_shipinstruct, lineitem.l_shipmode, lineitem.l_comment \n        FROM lineitem \n        AS lineitem\n    ) AS lineitem\nON (lineitem.l_orderkey = orders.o_orderkey)\n\n            ) AS _17002268185192452\n    Inner JOIN\n(\n        SELECT part.p_partkey, part.p_name, part.p_mfgr, part.p_brand, part.p_type, part.p_size, part.p_container, part.p_retailprice, part.p_comment \n        FROM part \n        AS part\n    WHERE ((part.p_type)::text = 'SMALL PLATED COPPER'::text)) AS part\nON (part.p_partkey = _17002268185192452.l_partkey)\n\n            ) AS _17002268185220800\n    Inner JOIN\n(\n        SELECT supplier.s_suppkey, supplier.s_name, supplier.s_address, supplier.s_nationkey, supplier.s_phone, supplier.s_acctbal, supplier.s_comment \n        FROM supplier \n        AS supplier\n    ) AS supplier\nON (supplier.s_suppkey = _17002268185220800.l_suppkey)\n\n            ) AS _17002268185255950\n    Inner JOIN\n(\n        SELECT customer.c_custkey, customer.c_name, customer.c_address, customer.c_nationkey, customer.c_phone, customer.c_acctbal, customer.c_mktsegment, customer.c_comment \n        FROM customer \n        AS customer\n    ) AS customer\nON (customer.c_custkey = _17002268185255950.o_custkey)\n\n            ) AS _17002268185298620\n    Inner JOIN\n(\n        SELECT n1.n_nationkey, n1.n_name, n1.n_regionkey, n1.n_comment \n        FROM nation \n        AS n1\n    ) AS n1\nON (n1.n_nationkey = _17002268185298620.c_nationkey)\n\n            ) AS _17002268185341440\n    Inner JOIN\n(\n        SELECT n2.n_nationkey, n2.n_name, n2.n_regionkey, n2.n_comment \n        FROM nation \n        AS n2\n    ) AS n2\nON (n2.n_nationkey = _17002268185341440.s_nationkey)\n\n            ) AS _17002268185374780\n    Inner JOIN\n(\n        SELECT region.r_regionkey, region.r_name, region.r_comment \n        FROM region \n        AS region\n    WHERE (region.r_name = 'ASIA'::bpchar)) AS region\nON (region.r_regionkey = _17002268185374780.n_regionkey)\n\nORDER BY\no_orderdate\n            ) AS _17002268185433778\n        GROUP BY _17002268185433778.o_orderdate\n    \nLIMIT 0",
-                "Filename": "_17002268185457978.csv",
+                "Query": "\n        SELECT\n            _17002282187269840.n_nationkey, _17002282187269840.n_name, _17002282187269840.n_regionkey, _17002282187269840.n_comment, _17002282187269840.r_regionkey, _17002282187269840.r_name, _17002282187269840.r_comment, supplier.s_suppkey, supplier.s_name, supplier.s_address, supplier.s_nationkey, supplier.s_phone, supplier.s_acctbal, supplier.s_comment\n        FROM \n            (\n                \n        SELECT supplier.s_suppkey, supplier.s_name, supplier.s_address, supplier.s_nationkey, supplier.s_phone, supplier.s_acctbal, supplier.s_comment \n        FROM supplier \n        AS supplier\n    \n            ) AS supplier\n    Inner JOIN\n(\n        SELECT\n            nation.n_nationkey, nation.n_name, nation.n_regionkey, nation.n_comment, region.r_regionkey, region.r_name, region.r_comment\n        FROM \n            (\n                \n        SELECT nation.n_nationkey, nation.n_name, nation.n_regionkey, nation.n_comment \n        FROM nation \n        AS nation\n    \n            ) AS nation\n    Inner JOIN\n(\n        SELECT region.r_regionkey, region.r_name, region.r_comment \n        FROM region \n        AS region\n    ) AS region\nON (nation.n_regionkey = region.r_regionkey)\n\nORDER BY\nn_nationkey) AS _17002282187269840\nON (supplier.s_nationkey = _17002282187269840.n_nationkey)\n",
+                "Filename": "_17002282187270050.csv",
                 "NodeID": 0,
                 "ParentNodeID": null
             }
         ]
     },
     "additionalInfo": {
-        "Shared Hit Blocks": 366,
-        "Shared Read Blocks": 1,
+        "Shared Hit Blocks": 117,
+        "Shared Read Blocks": 0,
         "Shared Dirtied Blocks": 0,
         "Shared Written Blocks": 0,
         "Local Hit Blocks": 0,
@@ -768,122 +338,52 @@
         "Ranking": [
             [
                 [
-                    "Index Scan",
-                    13
+                    "Seq Scan",
+                    1
                 ],
-                0.38
-            ],
-            [
-                [
-                    "Index Scan",
-                    12
-                ],
-                0.39
-            ],
-            [
-                [
-                    "Index Scan",
-                    17
-                ],
-                0.42
-            ],
-            [
-                [
-                    "Index Scan",
-                    16
-                ],
-                0.46
-            ],
-            [
-                [
-                    "Index Scan",
-                    15
-                ],
-                0.48
-            ],
-            [
-                [
-                    "Index Scan",
-                    11
-                ],
-                8.16
-            ],
-            [
-                [
-                    "Index Scan",
-                    14
-                ],
-                8.16
+                11.5
             ],
             [
                 [
                     "Seq Scan",
-                    10
-                ],
-                13.15
-            ],
-            [
-                [
-                    "Nested Loop",
-                    9
-                ],
-                21.32
-            ],
-            [
-                [
-                    "Nested Loop",
-                    8
-                ],
-                21.95
-            ],
-            [
-                [
-                    "Nested Loop",
-                    7
-                ],
-                22.33
-            ],
-            [
-                [
-                    "Nested Loop",
-                    6
-                ],
-                30.61
-            ],
-            [
-                [
-                    "Nested Loop",
                     5
                 ],
-                31.09
+                11.7
             ],
             [
                 [
-                    "Nested Loop",
+                    "Seq Scan",
+                    7
+                ],
+                11.7
+            ],
+            [
+                [
+                    "Hash",
+                    6
+                ],
+                11.7
+            ],
+            [
+                [
+                    "Hash Join",
                     4
                 ],
-                31.55
-            ],
-            [
-                [
-                    "Nested Loop",
-                    3
-                ],
-                32.25
+                25.98
             ],
             [
                 [
                     "Sort",
-                    2
+                    3
                 ],
-                32.27
+                32.71
             ],
             [
                 [
-                    "Aggregate",
-                    1
+                    "Hash",
+                    2
                 ],
-                32.3
+                32.71
             ]
         ]
     }
