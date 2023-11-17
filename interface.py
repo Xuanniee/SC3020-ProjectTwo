@@ -89,7 +89,7 @@ class QueryWindowGUI(QMainWindow):
         beforeWindowWrapper = BeforeWindowWrapper()
 
         # Create and add SQLQueryWindow and LabelledQEPTreeWindow
-        window2 = LabelledQEPTreeWindow(self.parsedQepData, beforeWindowWrapper)
+        window2 = LabelledQEPTreeWindow(self.parsedQepData, beforeWindowWrapper, self.db)
         window1 = SQLQueryWindow(qepTreeWindow=window2, database=self.db)
 
         # Add instructions QLabel at the top
@@ -295,17 +295,18 @@ class NodeInfoDialog(QDialog):
         
 
 class CustomNode(QGraphicsRectItem):
-    def __init__(self, x, y, width, height, nodeData, beforeWindowWrapper):
+    def __init__(self, x, y, width, height, nodeData, beforeWindowWrapper, db):
         super().__init__(x, y, width, height)
         self.nodeData = nodeData
         self.beforeWindowWrapper = beforeWindowWrapper
         # Assume it is a Leaf Node until proven otherwise
         self.isLeaf = True
         self.setAcceptHoverEvents(True)
+        self.db = db
 
         # Create a label widget to display node information
         self.label = QLabel()
-        self.label.setStyleSheet("background-color: black; border: 1px solid white; padding: 5px;")
+        self.label.setStyleSheet("background-color: white; border: 1px solid black; padding: 5px;")
         self.label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
         self.label.setVisible(False)
 
@@ -332,6 +333,8 @@ class CustomNode(QGraphicsRectItem):
         # TODO Also display Pei Yee's part. (DISPLAY FIRST)
         # True if it's a leaf node, else it is not
         firstOperator = True if self.isLeaf else None
+
+
 
         self.beforeWindowWrapper.updateWindow(False, r1Name=["orders"], relation1=DataRetriever().getInterData('_17001997288923678.csv'), relationOut=DataRetriever().getInterData('_17001998061102650.csv'))
         # Display a pop-up window when the user clicks on the rectangle
@@ -382,7 +385,7 @@ NODE_HORIZONTAL_SPACING = 20
 NODE_VERTICAL_SPACING = 100
 
 class LabelledQEPTreeWindow(QWidget):
-    def __init__(self, parsedQepData, beforeWindowWrapper, parent=None):
+    def __init__(self, parsedQepData, beforeWindowWrapper, db, parent=None):
         super(LabelledQEPTreeWindow, self).__init__(parent)
         self.beforeWindowWrapper = beforeWindowWrapper
 
@@ -394,7 +397,7 @@ class LabelledQEPTreeWindow(QWidget):
         layout.addWidget(label, alignment=Qt.AlignmentFlag.AlignTop |   Qt.AlignmentFlag.AlignHCenter)
 
         # Create an instance of QEPTreeWindow and add it to the layout
-        self.treeWindow = QEPTreeWindow(parsedQepData, beforeWindowWrapper)
+        self.treeWindow = QEPTreeWindow(parsedQepData, beforeWindowWrapper, db)
         layout.addWidget(self.treeWindow, alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
 
         # Manually set the sizeHint of the label to reduce the vertical gap
@@ -413,11 +416,12 @@ class LabelledQEPTreeWindow(QWidget):
 
 
 class QEPTreeWindow(QGraphicsView):
-    def __init__(self, parsedQepData, beforeWindowWrapper, parent=None):
+    def __init__(self, parsedQepData, beforeWindowWrapper, db, parent=None):
         super(QEPTreeWindow, self).__init__(parent)
         self.parsedQepData = parsedQepData
         self.beforeWindowWrapper = beforeWindowWrapper
         self.setFixedSize(SQL_WINDOW_WIDTH * 2, SQL_WINDOW_HEIGHT)
+        self.db = db
 
         # Create a Dictionary to Track Nodes with their Top and Bottom Coordinates
         self.topDict = {}
@@ -475,7 +479,7 @@ class QEPTreeWindow(QGraphicsView):
                     currX  = currX + NODE_WIDTH + NODE_HORIZONTAL_SPACING
 
                 # Create a QGraphicsRectItem for the current node
-                currNode = CustomNode(currX, currY, NODE_WIDTH, NODE_HEIGHT, node, self.beforeWindowWrapper)
+                currNode = CustomNode(currX, currY, NODE_WIDTH, NODE_HEIGHT, node, self.beforeWindowWrapper, self.db)
         
                 scene.addItem(currNode)
 
@@ -553,7 +557,7 @@ class QEPTreeWindow(QGraphicsView):
                     relationName = node.get('Relation Name', 'N/A')
 
                     # Draw another rectangle representing the relation directly below the leaf node
-                    relationRect = CustomNode(currTopX - (NODE_WIDTH/2), currTopY + NODE_HEIGHT + NODE_VERTICAL_SPACING, NODE_WIDTH, NODE_HEIGHT, {'Relation Name': relationName}, self.beforeWindowWrapper)
+                    relationRect = CustomNode(currTopX - (NODE_WIDTH/2), currTopY + NODE_HEIGHT + NODE_VERTICAL_SPACING, NODE_WIDTH, NODE_HEIGHT, {'Relation Name': relationName}, self.beforeWindowWrapper, self.db)
                     relationRect.setBrush(Qt.GlobalColor.lightGray)
                     scene.addItem(relationRect)
 
