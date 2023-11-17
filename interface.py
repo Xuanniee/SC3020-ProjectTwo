@@ -330,6 +330,9 @@ class CustomNode(QGraphicsRectItem):
         isJoin = 'Join Type' in self.nodeData
         filesNeeded = 2 if isJoin else 1
 
+        if "NodeID" not in self.nodeData:
+            return
+        
         files = getInputFiles(self.nodeData['NodeID'], filesNeeded)
         outRelation = self.nodeData.get("Filename", None)
 
