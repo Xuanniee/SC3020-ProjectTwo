@@ -212,10 +212,8 @@ Helper function to get the input files for a given node
 def getInputFiles(nodeId, needed):
     res = []
     def temp(nodeId):
-        print(parsedQepData)
         for children in descendants[nodeId]:
             for node in parsedQepData[children]:
-                print(node)
                 if node.get('Filename', None) != None:
                     res.append(node['Filename'])
         if len(res) != needed:
