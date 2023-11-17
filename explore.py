@@ -72,6 +72,10 @@ def join(op: "JSON"):
 
         # index scan / index only scan
         join_filter = right.get('Index Cond')
+
+    if not join_filter:
+        import json
+        print(json.dumps(op, indent=2))
     
     if not right.get('Alias'):
 
@@ -257,8 +261,6 @@ class QEP:
 
         _type = op['Node Type']
         failed = False
-
-        logger.info(f'Resolving: {_type}')
         
         for child_op in op.get('Plans', []):
             if not self._resolve_opt(child_op):
@@ -266,6 +268,7 @@ class QEP:
         if failed:
             return False
             
+        logger.info(f'Resolving: {_type}')
         _qep = self if self.__save else None
         if _type in ['Nested Loop', 'Hash Join']:
             join(op, qep=_qep)
@@ -288,8 +291,10 @@ class QEP:
                 child = op['Plans'][0]
                 op['Query'] = child['Query']
                 op['Alias'] = child.get('Alias')
+                if 'Index Cond' not in op:
+                    op['Index Cond'] = child.get('Index Cond', None)
             
-            logger.debug(f'Projecting operatore upstream: {_type}')
+            logger.debug(f'Projecting operator upstream: {_type}')
         return op['Query'] != ''
 
     def cleanup(self):
