@@ -22,14 +22,14 @@ logging.basicConfig(level=logging.DEBUG)
 
 def store_query(f: Callable) -> Callable:
     """Decorator for operator functions.
-    
+
     Write operator outputs to csv as needed."""
 
     def _f(
         op: "JSON",
         qep: "QEP" = None,
     ) -> str:
-        
+
         query = f(op)
         op['Query'] = query
 
@@ -38,7 +38,7 @@ def store_query(f: Callable) -> Callable:
             if fname:
                 op['Filename'] = fname
         return query
-    
+
     return _f
 
 
@@ -51,20 +51,20 @@ def _rand_id() -> str:
 @store_query
 def join(op: "JSON"):
     """Handles join operators
-    
+
     * Nested Loop Inner Join 
     * Hash Join"""
 
     left = op['Plans'][0]
     right = op['Plans'][1]
     cols = ', '.join(op['Output'])
-    join_filter = op.get('Join Filter') 
+    join_filter = op.get('Join Filter')
     qright = f'({right.get("Query")})'
 
     # Join filter may not be explicitly provided.
     # If unprovided, look at right child for join cond, which usually will be index scan on index cond
     if not join_filter:
-        
+
         # hash join
         join_filter = op.get('Hash Cond')
 
@@ -82,7 +82,7 @@ def join(op: "JSON"):
             _col = f'{_id_right}.' + '.'.join(col.split('.')[1:])
             cols = cols.replace(col,  _col)
             join_filter = join_filter.replace(col, _col)
-            
+
         right['Alias'] = _id_right
 
     if not left.get('Alias'):
@@ -94,7 +94,7 @@ def join(op: "JSON"):
             _col = f'{_id_left}.' + '.'.join(col.split('.')[1:])
             cols = cols.replace(col,  _col)
             join_filter = join_filter.replace(col, _col)
-            
+
         left['Alias'] = _id_left
 
     query = f'''
@@ -115,7 +115,7 @@ def join(op: "JSON"):
 @store_query
 def scan(op: "JSON"):
     """Scan operators
-    
+
     * Seq Scan
     * Index Scan
     * Index Only Scan"""
@@ -134,7 +134,7 @@ def scan(op: "JSON"):
 @store_query
 def aggregate(op: "JSON"):
     """Aggregate operators, e.g., SUM(), MIN(), AVG ..."""
-    
+
     _id = _rand_id()
     cols = []
     grpkeys = []
@@ -146,7 +146,7 @@ def aggregate(op: "JSON"):
 
         for part in parts[:-1]:
             i = len(part)-1
-            while i >= 0 and (part[i].isalnum() or part[i]=='_'):
+            while i >= 0 and (part[i].isalnum() or part[i] == '_'):
                 i -= 1
             _col += part[:i+1] + _id + '.'
 
@@ -158,12 +158,12 @@ def aggregate(op: "JSON"):
 
         for part in parts[:-1]:
             i = len(part)-1
-            while i >= 0 and (part[i].isalnum() or part[i]=='_'):
+            while i >= 0 and (part[i].isalnum() or part[i] == '_'):
                 i -= 1
             _key += part[:i+1] + _id + '.'
 
         grpkeys.append(_key + parts[-1])
-    
+
     query = f'''
         SELECT 
             {", ".join(cols)} 
@@ -188,7 +188,7 @@ def sort_table(op: "JSON"):
 
         for part in parts[:-1]:
             i = len(part)-1
-            while i >= 0 and (part[i].isalnum() or part[i]=='_'):
+            while i >= 0 and (part[i].isalnum() or part[i] == '_'):
                 i -= 1
             _key += part[:i+1]
         keys.append(_key + parts[-1])
@@ -203,6 +203,7 @@ def limit(op: "JSON"):
     return op['Plans'][0]['Query'] + f'\nLIMIT {op["Actual Rows"] * op["Actual Loops"]}'
 
 # ==================== Query Execution Plan handler ====================
+
 
 class QEP:
     """Takes in a QEP json, calculates all intermediate results which will be saved to file. 
@@ -223,7 +224,6 @@ class QEP:
         self.__db = db
         self.__query = query
 
-
     def resolve(self):
         """Start operator resolve chain"""
 
@@ -232,10 +232,10 @@ class QEP:
             for child in self.__qep.get('Plans', []):
                 self._resolve_opt(child)
             if self.__save:
-                self.__qep['Filename'] = self.store(self.__query, 'scan' if 'Scan' in self.__qep['Node Type'] else '')
+                self.__qep['Filename'] = self.store(
+                    self.__query, 'scan' if 'Scan' in self.__qep['Node Type'] else '')
         else:
             self._resolve_opt(self.__qep)
-
 
     def store(self, query: str, qtype: str) -> str:
         """Run a query and save results in temporary csv file"""
@@ -249,35 +249,34 @@ class QEP:
 
         with open(fname, 'w') as f:
             try:
-                self.__db.cursor.copy_expert(query_out, f)    
+                self.__db.cursor.copy_expert(query_out, f)
             except Exception as e:
                 print(e)
                 return
-        
+
         logger.info(f'Saved to: {fname}')
         logger.debug(f'{query}\n')
         self.__saved.append(fname)
 
         return fname
-            
 
     def _resolve_opt(self, op: "JSON") -> bool:
         """Recursively resolve the intermediate operator query plan"""
 
         _type = op['Node Type']
         failed = False
-        
+
         for child_op in op.get('Plans', []):
             if not self._resolve_opt(child_op):
                 failed = True
         if failed:
             return False
-            
+
         logger.info(f'Resolving: {_type}')
         _qep = self if self.__save else None
         if _type in ['Nested Loop', 'Hash Join']:
             join(op, qep=_qep)
-        
+
         elif _type in ['Seq Scan', 'Index Scan', 'Index Only Scan']:
             scan(op, qep=_qep)
 
@@ -289,7 +288,7 @@ class QEP:
 
         elif _type == 'Limit':
             limit(op, qep=_qep)
-        
+
         else:
             # project child operator's states upwards
             if op.get('Plans'):
@@ -298,7 +297,7 @@ class QEP:
                 op['Alias'] = child.get('Alias')
                 if 'Index Cond' not in op:
                     op['Index Cond'] = child.get('Index Cond', None)
-            
+
             logger.debug(f'Projecting operator upstream: {_type}')
         return op['Query'] != ''
 
@@ -315,55 +314,62 @@ class QEP:
                 pass
         self.__saved.clear()
 
+        for file in os.listdir():
+            if file[0] == '_' and file.endswith('.csv'):
+                os.remove(file)
+                logger.info(f'Removed: {file}')
+
 # ==================== QEP Tree formatter ====================
 
+
 def generateTree(query=None, qep=None):
-        """ 
-        Executes a given query and returns the QEP in the form of a tree dictionary.
+    """ 
+    Executes a given query and returns the QEP in the form of a tree dictionary.
 
-        Parameters:
-            (OPTIONAL) query (str): The query to be executed, the method assumes it is a SELECT query.
-            (OPTIONAL) qep (dict): The QEP to format into a tree
+    Parameters:
+        (OPTIONAL) query (str): The query to be executed, the method assumes it is a SELECT query.
+        (OPTIONAL) qep (dict): The QEP to format into a tree
 
-            NOTE: Either query or qep must be provided, if both are provided, the query will be ignored.
-        
-        returns the formatted QEP tree for the given query as a dictionary along with additional information about the QEP
-        """
-        if not query and not qep:
-            print('Unable to generate tree, either provide a query or a QEP')
-        
-        if not qep:
-            QEP = db.explainQuery(query)
-            additional = QEP[0][0][0]['Planning']
-            QEP = QEP[0][0][0]['Plan'] 
-        else:
-            additional = qep['Planning']
-            QEP = qep['Plan']
+        NOTE: Either query or qep must be provided, if both are provided, the query will be ignored.
 
-        tree = defaultdict(list)
-        
-        ids = [1]
-        ranking = {}
+    returns the formatted QEP tree for the given query as a dictionary along with additional information about the QEP
+    """
+    if not query and not qep:
+        print('Unable to generate tree, either provide a query or a QEP')
 
-        def createTree(plans, level, parent):
-            for plan in plans:
-                plan['NodeID'] = ids[0]
-                plan['ParentNodeID'] = parent
-                ids[0] += 1
-                if 'Plans' in plan:
-                    createTree(plan['Plans'], level+1, plan['NodeID'])
-                    del plan['Plans']
-                ranking[(plan['Node Type'], plan['NodeID'])] = float(plan['Total Cost'])
-                tree[level].append(plan)
-        
-        if 'Plans' in QEP:
-            createTree(QEP['Plans'], 1, 0)
-            del QEP['Plans']
+    if not qep:
+        QEP = db.explainQuery(query)
+        additional = QEP[0][0][0]['Planning']
+        QEP = QEP[0][0][0]['Plan']
+    else:
+        additional = qep['Planning']
+        QEP = qep['Plan']
 
-        QEP['NodeID'] = 0
-        QEP['ParentNodeID'] = None
-        tree[0].append(QEP)
+    tree = defaultdict(list)
 
-        additional['Ranking'] = sorted(ranking.items(), key=lambda x: x[1])
+    ids = [1]
+    ranking = {}
 
-        return {'tree': tree, 'additionalInfo': additional}
+    def createTree(plans, level, parent):
+        for plan in plans:
+            plan['NodeID'] = ids[0]
+            plan['ParentNodeID'] = parent
+            ids[0] += 1
+            if 'Plans' in plan:
+                createTree(plan['Plans'], level+1, plan['NodeID'])
+                del plan['Plans']
+            ranking[(plan['Node Type'], plan['NodeID'])
+                    ] = float(plan['Total Cost'])
+            tree[level].append(plan)
+
+    if 'Plans' in QEP:
+        createTree(QEP['Plans'], 1, 0)
+        del QEP['Plans']
+
+    QEP['NodeID'] = 0
+    QEP['ParentNodeID'] = None
+    tree[0].append(QEP)
+
+    additional['Ranking'] = sorted(ranking.items(), key=lambda x: x[1])
+
+    return {'tree': tree, 'additionalInfo': additional}
