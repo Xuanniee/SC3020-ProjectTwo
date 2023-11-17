@@ -29,10 +29,8 @@ from PyQt6.QtWidgets import (
     QTableView,
 )
 
-from explainExample9 import qepObject
 from Database.database import Database
 from explore import QEP, generateTree
-
 
 """
 Global Parameters
@@ -46,6 +44,7 @@ descendants = defaultdict(list)
 parsedQepData = {}
 """
 Main Application Window
+Output contains relations, Node Type check if Join, Filename pass also
 """
 class QueryWindowGUI(QMainWindow):
     def __init__(self, dbName, dbUser, dbPassword, dbHost, portNum, qepObject=None, parsedQepData=None):
@@ -87,18 +86,26 @@ class QueryWindowGUI(QMainWindow):
     def _createCentralLayout(self):
         centralWidget = QWidget()
         centralAppLayout = QGridLayout(centralWidget)
+        beforeWindowWrapper = BeforeWindowWrapper()
 
         # Create and add SQLQueryWindow and LabelledQEPTreeWindow
-        window2 = LabelledQEPTreeWindow(self.parsedQepData)
+        window2 = LabelledQEPTreeWindow(self.parsedQepData, beforeWindowWrapper)
         window1 = SQLQueryWindow(qepTreeWindow=window2, database=self.db)
 
         # Add instructions QLabel at the top
-        instructions_label = QLabel("Instructions:\n1. Enter SQL query in the first window.\n2. View the QEP tree and result in the second window.")
+        instructions_label = QLabel("Instructions:\n1. Enter SQL query in the first window and submit your query.\n (Assume that the query is valid as no error checking is performed and a semi-colon is not required)\n 2. View the QEP tree result in the second window. (Light Gray Rectangles are Relation Tables) \n 3. Hover over any Node in the QEP to see more imporntant additional information.\n 4. Click the Node to see all the detailed information in the Node in a separate pop-up window.\n 5. At the same time, a separate table will appear on the right allowing you to visualise the nodes and tuples in greater detail.\n")
         centralAppLayout.addWidget(instructions_label, 0, 0, 1, 2)  # Spanning two columns
 
         # Set the Various Windows required
         centralAppLayout.addWidget(window1, 1, 0)
         centralAppLayout.addWidget(window2, 1, 1)
+
+        # Create BeforeWindowWrapper
+        # beforeWindowWrapper = BeforeWindowWrapper(False, ["orders"], DataRetriever().getInterData('_17001997288923678.csv'), DataRetriever().getInterData('_17001998061102650.csv'))
+        
+
+        # Add BeforeWindowWrapper to layout
+        centralAppLayout.addWidget(beforeWindowWrapper, 1, 2)
         # centralAppLayout.addWidget(BeforeWindow(False,  ["orders"], DataRetriever().getInterData('_17001997288923678.csv'), DataRetriever().getInterData('_17001998061102650.csv')), 1, 2)
         # centralAppLayout.addWidget(BeforeWindow(False,  ["orders"], DataRetriever().getInterData('_17001997288923678.csv'), DataRetriever().getInterData('_17001998061102650.csv')), 1, 2)
 
@@ -109,6 +116,21 @@ class QueryWindowGUI(QMainWindow):
 
         self.setCentralWidget(scrollArea)
 
+class EmptyWindow(QWidget):
+    def __init__(self):
+        super(EmptyWindow, self).__init__()
+
+        self.setWindowTitle("Empty Window")
+        self.setGeometry(100, 100, SQL_WINDOW_WIDTH, SQL_WINDOW_HEIGHT)
+
+        layout = QVBoxLayout()
+
+        subheading_label = QLabel("Detailed Visualisations are only available after providing a SQL query and clicking a node in the QEP tree")
+        subheading_label.setStyleSheet("font-size: 16pt;")
+
+        layout.addWidget(subheading_label)
+
+        self.setLayout(layout)
 
 """
 Window 1 - Provide SQL Query from User
@@ -165,6 +187,7 @@ class SQLQueryWindow(QWidget):
             # TODO Print no tree printed on the screen somehow
             print("No tree should be printed")
 
+        # Get Child Relations
         for level in sorted(parsedQepData.keys(), reverse=True):
             for node in parsedQepData[level]:
                 descendants[node['ParentNodeID']].append(node['NodeID'])
@@ -202,10 +225,13 @@ def getInputFiles(nodeId, needed):
     return res
 
 class NodeInfoDialog(QDialog):
-    def __init__(self, nodeData, parent=None):
+    def __init__(self, nodeData, isLeaf, beforeWindowWrapper, parent=None):
         super(NodeInfoDialog, self).__init__(parent)
         self.setWindowTitle("Node Information")
         self.setGeometry(100, 100, 400, 300)
+        self.nodeData = nodeData
+        self.isLeaf = isLeaf
+        self.beforeWindowWrapper = beforeWindowWrapper
 
         layout = QVBoxLayout()
 
@@ -219,7 +245,7 @@ class NodeInfoDialog(QDialog):
         button = QPushButton("Visualise in Greater Detail")
 
         # Pass the Filename
-        button.clicked.connect(self.furtherVisualise)
+        # button.clicked.connect(self.furtherVisualise)
         
         layout.addWidget(button)
 
@@ -228,19 +254,44 @@ class NodeInfoDialog(QDialog):
     def retrieveNodeInfo(self, nodeData):
         info = ""
         for key, value in nodeData.items():
-            if key != "Query" or key != "Filename":
+            if key != "Query" and key != "Filename":
                 info += f"{key}: {value}\n"
         return info
 
     def furtherVisualise(self):
-        # BeforeWindow(False,  ["orders"], DataRetriever().getInterData('_17001997288923678.csv'), DataRetriever().getInterData('_17001998061102650.csv')
-        # Determine if it's first
-        pass
+        print("Came in")
+        
+        # Extract Output, NodeType, Filename
+        nodeOutput = self.nodeData["Output"]
+        # Output Relation, Relation 1 is Child Relation
+        outRelation = self.nodeData["Filename"]
+
+        nodeType = self.nodeData["Node Type"]
+        print(childrenRelation[self.nodeData["NodeID"]])
+
+        # Update the BeforeWindowProps object based on the calculated relations_set
+        relations_set = {item.split('.')[0] for item in nodeOutput}
+
+        # File
+        # self.beforeWindowProps["r1Name"] = relations_set.pop() if relations_set else None
+        # self.beforeWindowProps["r2Name"] = relations_set.pop() if relations_set else None
+        
+        # # True if it's a leaf node, else it is not
+        # self.beforeWindowProps["firstOperator"] = True if self.isLeaf else None
+        # self.beforeWindowProps["filename"] = outRelation
+
+        # self.beforeWindowProps["updated"] = True
+
+        # Call the Update Function, thereby passing
+        self.beforeWindowWrapper.updateWindow(first=False, r1Name=["orders"], relation1=DataRetriever().getInterData('_17001997288923678.csv'), relationOut=DataRetriever().getInterData('_17001998061102650.csv'))
+        
+        
 
 class CustomNode(QGraphicsRectItem):
-    def __init__(self, x, y, width, height, nodeData):
+    def __init__(self, x, y, width, height, nodeData, beforeWindowWrapper):
         super().__init__(x, y, width, height)
         self.nodeData = nodeData
+        self.beforeWindowWrapper = beforeWindowWrapper
         # Assume it is a Leaf Node until proven otherwise
         self.isLeaf = True
         self.setAcceptHoverEvents(True)
@@ -271,9 +322,38 @@ class CustomNode(QGraphicsRectItem):
         self.label.setVisible(False)
 
     def mousePressEvent(self, event):
+        # TODO Also display Pei Yee's part. (DISPLAY FIRST)
+        # True if it's a leaf node, else it is not
+        firstOperator = True if self.isLeaf else None
+
+        self.beforeWindowWrapper.updateWindow(False, r1Name=["orders"], relation1=DataRetriever().getInterData('_17001997288923678.csv'), relationOut=DataRetriever().getInterData('_17001998061102650.csv'))
         # Display a pop-up window when the user clicks on the rectangle
-        node_info_dialog = NodeInfoDialog(self.nodeData)
+        node_info_dialog = NodeInfoDialog(self.nodeData, self.isLeaf, self.beforeWindowWrapper)
         node_info_dialog.exec()
+
+        
+
+        # # Extract Output, NodeType, Filename
+        # nodeOutput = self.nodeData["Output"]
+        # # Output Relation, Relation 1 is Child Relation
+        # outRelation = self.nodeData["Filename"]
+        # nodeType = self.nodeData["Node Type"]
+
+        # print(childrenRelation[self.nodeData["NodeID"]])
+
+        # # Update the BeforeWindowProps object based on the calculated relations_set
+        # relations_set = {item.split('.')[0] for item in nodeOutput}
+
+        # # File
+        # self.beforeWindowWrapper["r1Name"] = relations_set.pop() if relations_set else None
+        # self.beforeWindowWrapper["r2Name"] = relations_set.pop() if relations_set else None
+        
+        
+        # self.beforeWindowWrapper["filename"] = outRelation
+
+        # self.beforeWindowWrapper["updated"] = True
+
+        
 
     def retrieveNodeInfo(self, nodeData):
         info = f"Node Type: {nodeData.get('Node Type', 'N/A')}\n"
@@ -295,8 +375,9 @@ NODE_HORIZONTAL_SPACING = 20
 NODE_VERTICAL_SPACING = 100
 
 class LabelledQEPTreeWindow(QWidget):
-    def __init__(self, parsedQepData, parent=None):
+    def __init__(self, parsedQepData, beforeWindowWrapper, parent=None):
         super(LabelledQEPTreeWindow, self).__init__(parent)
+        self.beforeWindowWrapper = beforeWindowWrapper
 
         # Create a QVBoxLayout
         layout = QVBoxLayout(self)
@@ -306,7 +387,7 @@ class LabelledQEPTreeWindow(QWidget):
         layout.addWidget(label, alignment=Qt.AlignmentFlag.AlignTop |   Qt.AlignmentFlag.AlignHCenter)
 
         # Create an instance of QEPTreeWindow and add it to the layout
-        self.treeWindow = QEPTreeWindow(parsedQepData)
+        self.treeWindow = QEPTreeWindow(parsedQepData, beforeWindowWrapper)
         layout.addWidget(self.treeWindow, alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
 
         # Manually set the sizeHint of the label to reduce the vertical gap
@@ -325,9 +406,10 @@ class LabelledQEPTreeWindow(QWidget):
 
 
 class QEPTreeWindow(QGraphicsView):
-    def __init__(self, parsedQepData, parent=None):
+    def __init__(self, parsedQepData, beforeWindowWrapper, parent=None):
         super(QEPTreeWindow, self).__init__(parent)
         self.parsedQepData = parsedQepData
+        self.beforeWindowWrapper = beforeWindowWrapper
         self.setFixedSize(SQL_WINDOW_WIDTH * 2, SQL_WINDOW_HEIGHT)
 
         # Create a Dictionary to Track Nodes with their Top and Bottom Coordinates
@@ -386,7 +468,7 @@ class QEPTreeWindow(QGraphicsView):
                     currX  = currX + NODE_WIDTH + NODE_HORIZONTAL_SPACING
 
                 # Create a QGraphicsRectItem for the current node
-                currNode = CustomNode(currX, currY, NODE_WIDTH, NODE_HEIGHT, node)
+                currNode = CustomNode(currX, currY, NODE_WIDTH, NODE_HEIGHT, node, self.beforeWindowWrapper)
         
                 scene.addItem(currNode)
 
@@ -409,7 +491,6 @@ class QEPTreeWindow(QGraphicsView):
                 # print("Bot: ", (currBotX, currBotY))
                 self.topDict[currNodeID] = (currTopX, currTopY)
                 self.bottomDict[currNodeID] = (currBotX, currBotY)
-
 
                 # Draw line connecting parent and child nodes
                 # print(level)
@@ -465,7 +546,7 @@ class QEPTreeWindow(QGraphicsView):
                     relationName = node.get('Relation Name', 'N/A')
 
                     # Draw another rectangle representing the relation directly below the leaf node
-                    relationRect = CustomNode(currTopX - (NODE_WIDTH/2), currTopY + NODE_HEIGHT + NODE_VERTICAL_SPACING, NODE_WIDTH, NODE_HEIGHT, {'Relation Name': relationName})
+                    relationRect = CustomNode(currTopX - (NODE_WIDTH/2), currTopY + NODE_HEIGHT + NODE_VERTICAL_SPACING, NODE_WIDTH, NODE_HEIGHT, {'Relation Name': relationName}, self.beforeWindowWrapper)
                     relationRect.setBrush(Qt.GlobalColor.lightGray)
                     scene.addItem(relationRect)
 
@@ -504,6 +585,28 @@ class QEPTreeWindow(QGraphicsView):
 """
 Window 3 - Display the Before of Data Block Visualisations
 """
+class BeforeWindowWrapper(QWidget):
+    def __init__(self):
+        super(BeforeWindowWrapper, self).__init__()
+
+        self.beforeWindow = EmptyWindow()
+
+        # Create layout
+        layout = QVBoxLayout(self)
+        layout.addWidget(self.beforeWindow)
+
+    def updateWindow(self, first, r1Name, relation1, relationOut, r2Name=None, relation2=None):
+        # Update the window with the stored data
+        self.beforeWindow = BeforeWindow(first, r1Name, relation1, relationOut, r2Name, relation2)
+        
+        # Clear the layout and add the updated window
+        layout = self.layout()
+        for i in reversed(range(layout.count())):
+            layout.itemAt(i).widget().setParent(None)
+        layout.addWidget(self.beforeWindow)
+        
+
+
 class TupleWindow(QWidget):
     """
     This "window" is a QWidget. If it has no parent, it
@@ -860,88 +963,4 @@ Window 4 - Display the After of Data Block Visualisations
 class AfterWindow(QWidget):
     def __init__(self):
         super().__init__(parent=None)
-
-# """
-# Main Script - To be abstracted into a different script subsequently
-# """
-# if __name__ == "__main__":
-#     # qepData = {
-#     #     1: [{
-#     #         'Node Type': 'Seq Scan', 'Parent Relationship': 'Outer', 'Parallel Aware': False, 'Async Capable': False, 'Relation Name': 'nation', 'Schema': 'public', 
-#     #         'Alias': 'nation', 'Startup Cost': 0.0, 'Total Cost': 12.12, 'Plan Rows': 1, 'Plan Width': 434, 'Actual Startup Time': 0.003, 'Actual Total Time': 0.004, 
-#     #         'Actual Rows': 0, 'Actual Loops': 1, 'Output': ['n_nationkey', 'n_name', 'n_regionkey', 'n_comment'], 'Filter': "(nation.n_name = 'ALGERIA'::bpchar)", 
-#     #         'Rows Removed by Filter': 0, 'Shared Hit Blocks': 0, 'Shared Read Blocks': 0, 'Shared Dirtied Blocks': 0, 'Shared Written Blocks': 0, 'Local Hit Blocks': 0, 
-#     #         'Local Read Blocks': 0, 'Local Dirtied Blocks': 0, 'Local Written Blocks': 0, 'Temp Read Blocks': 0, 'Temp Written Blocks': 0, 'NodeID': 1, 'ParentNodeID': 0
-#     #     }], 
-#     #     0: [{
-#     #         'Node Type': 'Sort', 'Parallel Aware': False, 'Async Capable': False, 'Startup Cost': 12.13, 'Total Cost': 12.14, 'Plan Rows': 1, 'Plan Width': 434, 
-#     #         'Actual Startup Time': 0.015, 'Actual Total Time': 0.016, 'Actual Rows': 0, 'Actual Loops': 1, 'Output': ['n_nationkey', 'n_name', 'n_regionkey', 'n_comment'], 
-#     #         'Sort Key': ['nation.n_nationkey'], 'Sort Method': 'quicksort', 'Sort Space Used': 25, 'Sort Space Type': 'Memory', 'Shared Hit Blocks': 3, 
-#     #         'Shared Read Blocks': 0, 'Shared Dirtied Blocks': 0, 'Shared Written Blocks': 0, 'Local Hit Blocks': 0, 'Local Read Blocks': 0, 'Local Dirtied Blocks': 0, 
-#     #         'Local Written Blocks': 0, 'Temp Read Blocks': 0, 'Temp Written Blocks': 0, 'NodeID': 0, 'ParentNodeID': None
-#     #     }]
-#     # }
-#     qepData = {
-#                 'tree': {
-#                     1: [{'Node Type': 'Seq Scan', 'Parent Relationship': 'Outer', 'Parallel Aware': False, 'Async Capable': False, 'Relation Name': 'supplier', 'Schema': 'public',
-#                         'Alias': 'supplier', 'Startup Cost': 0.0, 'Total Cost': 11.5, 'Plan Rows': 150, 'Plan Width': 512, 'Actual Startup Time': 0.005, 'Actual Total Time': 0.005, 
-#                         'Actual Rows': 0, 'Actual Loops': 1, 'Output': ['supplier.s_suppkey', 'supplier.s_name', 'supplier.s_address', 'supplier.s_nationkey', 'supplier.s_phone', 
-#                         'supplier.s_acctbal', 'supplier.s_comment'], 'Shared Hit Blocks': 0, 'Shared Read Blocks': 0, 'Shared Dirtied Blocks': 0, 'Shared Written Blocks': 0, 'Local Hit Blocks': 0, 'Local Read Blocks': 0, 
-#                         'Local Dirtied Blocks': 0, 'Local Written Blocks': 0, 'Temp Read Blocks': 0, 'Temp Written Blocks': 0, 'NodeID': 1, 'ParentNodeID': 0}, 
-                        
-#                         {'Node Type': 'Hash', 'Parent Relationship': 'Inner', 'Parallel Aware': False, 'Async Capable': False, 
-#                         'Startup Cost': 32.71, 'Total Cost': 32.71, 'Plan Rows': 170, 'Plan Width': 864, 'Actual Startup Time': 0.0, 'Actual Total Time': 0.0, 'Actual Rows': 0, 
-#                         'Actual Loops': 0, 'Output': ['nation.n_nationkey', 'nation.n_name', 'nation.n_regionkey', 'nation.n_comment', 'region.r_regionkey', 'region.r_name', 
-#                         'region.r_comment'], 'Shared Hit Blocks': 0, 'Shared Read Blocks': 0, 'Shared Dirtied Blocks': 0, 'Shared Written Blocks': 0, 'Local Hit Blocks': 0, 
-#                         'Local Read Blocks': 0, 'Local Dirtied Blocks': 0, 'Local Written Blocks': 0, 'Temp Read Blocks': 0, 'Temp Written Blocks': 0, 'NodeID': 2, 
-#                         'ParentNodeID': 0}], 
-                        
-#                     4: [{'Node Type': 'Seq Scan', 'Parent Relationship': 'Outer', 'Parallel Aware': False, 'Async Capable': False, 'Relation Name': 
-#                         'nation', 'Schema': 'public', 'Alias': 'nation', 'Startup Cost': 0.0, 'Total Cost': 11.7, 'Plan Rows': 170, 'Plan Width': 434, 'Actual Startup Time': 0.0, 
-#                         'Actual Total Time': 0.0, 'Actual Rows': 0, 'Actual Loops': 0, 'Output': ['nation.n_nationkey', 'nation.n_name', 'nation.n_regionkey', 'nation.n_comment'], 
-#                         'Shared Hit Blocks': 0, 'Shared Read Blocks': 0, 'Shared Dirtied Blocks': 0, 'Shared Written Blocks': 0, 'Local Hit Blocks': 0, 'Local Read Blocks': 0, 
-#                         'Local Dirtied Blocks': 0, 'Local Written Blocks': 0, 'Temp Read Blocks': 0, 'Temp Written Blocks': 0, 'NodeID': 5, 'ParentNodeID': 4}, 
-                        
-#                         {'Node Type': 'Hash', 
-#                         'Parent Relationship': 'Inner', 'Parallel Aware': False, 'Async Capable': False, 'Startup Cost': 11.7, 'Total Cost': 11.7, 'Plan Rows': 170, 'Plan Width': 430, 
-#                         'Actual Startup Time': 0.0, 'Actual Total Time': 0.0, 'Actual Rows': 0, 'Actual Loops': 0, 'Output': ['region.r_regionkey', 'region.r_name', 'region.r_comment'], 
-#                         'Shared Hit Blocks': 0, 'Shared Read Blocks': 0, 'Shared Dirtied Blocks': 0, 'Shared Written Blocks': 0, 'Local Hit Blocks': 0, 'Local Read Blocks': 0, 
-#                         'Local Dirtied Blocks': 0, 'Local Written Blocks': 0, 'Temp Read Blocks': 0, 'Temp Written Blocks': 0, 'NodeID': 6, 'ParentNodeID': 4}], 
-                        
-#                     5: [{'Node Type': 'Seq Scan', 
-#                         'Parent Relationship': 'Outer', 'Parallel Aware': False, 'Async Capable': False, 'Relation Name': 'region', 'Schema': 'public', 'Alias': 'region', 'Startup Cost': 0.0, 
-#                         'Total Cost': 11.7, 'Plan Rows': 170, 'Plan Width': 430, 'Actual Startup Time': 0.0, 'Actual Total Time': 0.0, 'Actual Rows': 0, 'Actual Loops': 0, 'Output': ['region.r_regionkey', 
-#                         'region.r_name', 'region.r_comment'], 'Shared Hit Blocks': 0, 'Shared Read Blocks': 0, 'Shared Dirtied Blocks': 0, 'Shared Written Blocks': 0, 'Local Hit Blocks': 0, 
-#                         'Local Read Blocks': 0, 'Local Dirtied Blocks': 0, 'Local Written Blocks': 0, 'Temp Read Blocks': 0, 'Temp Written Blocks': 0, 'NodeID': 7, 'ParentNodeID': 6}], 
-
-#                     3: [{'Node Type': 'Hash Join', 'Parent Relationship': 'Outer', 'Parallel Aware': False, 'Async Capable': False, 'Join Type': 'Inner', 'Startup Cost': 13.82, 
-#                          'Total Cost': 25.98, 'Plan Rows': 170, 'Plan Width': 864, 'Actual Startup Time': 0.0, 'Actual Total Time': 0.0, 'Actual Rows': 0, 'Actual Loops': 0, 'Output': 
-#                          ['nation.n_nationkey', 'nation.n_name', 'nation.n_regionkey', 'nation.n_comment', 'region.r_regionkey', 'region.r_name', 'region.r_comment'], 'Inner Unique': True, 
-#                          'Hash Cond': '(nation.n_regionkey = region.r_regionkey)', 'Shared Hit Blocks': 0, 'Shared Read Blocks': 0, 'Shared Dirtied Blocks': 0, 'Shared Written Blocks': 0, 
-#                          'Local Hit Blocks': 0, 'Local Read Blocks': 0, 'Local Dirtied Blocks': 0, 'Local Written Blocks': 0, 'Temp Read Blocks': 0, 'Temp Written Blocks': 0, 'NodeID': 4, 
-#                          'ParentNodeID': 3}], 
-                         
-#                     2: [{'Node Type': 'Sort', 'Parent Relationship': 'Outer', 'Parallel Aware': False, 'Async Capable': False, 'Startup Cost': 32.28, 'Total Cost': 32.71, 
-#                         'Plan Rows': 170, 'Plan Width': 864, 'Actual Startup Time': 0.0, 'Actual Total Time': 0.0, 'Actual Rows': 0, 'Actual Loops': 0, 'Output': ['nation.n_nationkey', 
-#                         'nation.n_name', 'nation.n_regionkey', 'nation.n_comment', 'region.r_regionkey', 'region.r_name', 'region.r_comment'], 'Sort Key': ['nation.n_nationkey'], 'Shared Hit Blocks': 0, 
-#                         'Shared Read Blocks': 0, 'Shared Dirtied Blocks': 0, 'Shared Written Blocks': 0, 'Local Hit Blocks': 0, 'Local Read Blocks': 0, 'Local Dirtied Blocks': 0, 
-#                         'Local Written Blocks': 0, 'Temp Read Blocks': 0, 'Temp Written Blocks': 0, 'NodeID': 3, 'ParentNodeID': 2}], 
-                        
-#                     0: [{'Node Type': 'Hash Join', 'Parallel Aware': False, 
-#                         'Async Capable': False, 'Join Type': 'Inner', 'Startup Cost': 34.83, 'Total Cost': 48.39, 'Plan Rows': 150, 'Plan Width': 1376, 'Actual Startup Time': 0.005, 
-#                         'Actual Total Time': 0.006, 'Actual Rows': 0, 'Actual Loops': 1, 'Output': ['nation.n_nationkey', 'nation.n_name', 'nation.n_regionkey', 'nation.n_comment', 
-#                         'region.r_regionkey', 'region.r_name', 'region.r_comment', 'supplier.s_suppkey', 'supplier.s_name', 'supplier.s_address', 'supplier.s_nationkey', 'supplier.s_phone', 
-#                         'supplier.s_acctbal', 'supplier.s_comment'], 'Inner Unique': False, 'Hash Cond': '(supplier.s_nationkey = nation.n_nationkey)', 'Shared Hit Blocks': 0, 
-#                         'Shared Read Blocks': 0, 'Shared Dirtied Blocks': 0, 'Shared Written Blocks': 0, 'Local Hit Blocks': 0, 'Local Read Blocks': 0, 'Local Dirtied Blocks': 0, 
-#                         'Local Written Blocks': 0, 'Temp Read Blocks': 0, 'Temp Written Blocks': 0, 'NodeID': 0, 'ParentNodeID': None}]}, 'additionalInfo': {'Shared Hit Blocks': 104, 
-#                         'Shared Read Blocks': 8, 'Shared Dirtied Blocks': 1, 'Shared Written Blocks': 0, 'Local Hit Blocks': 0, 'Local Read Blocks': 0, 'Local Dirtied Blocks': 0, 
-#                         'Local Written Blocks': 0, 'Temp Read Blocks': 0, 'Temp Written Blocks': 0, 'Ranking': [(('Seq Scan', 1), 11.5), (('Seq Scan', 5), 11.7), (('Seq Scan', 7), 11.7), 
-#                         (('Hash', 6), 11.7), (('Hash Join', 4), 25.98), (('Sort', 3), 32.71), (('Hash', 2), 32.71)]}
-#         }
-
-#     queryApp = QApplication([])
-#     queryWindow = QueryWindowGUI(qepObject)
-#     queryWindow.show()
-#     sys.exit(queryApp.exec())
-
 
