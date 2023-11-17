@@ -212,7 +212,8 @@ class QEP:
     def __init__(
         self,
         qep: "JSON",
-        save: bool = False
+        save: bool = False,
+        query: str = None
     ):
         """Iteratively resolve operators from bottom to top, left to right"""
 
@@ -220,12 +221,20 @@ class QEP:
         self.__save = save
         self.__saved = []
         self.__db = db
+        self.__query = query
 
 
     def resolve(self):
         """Start operator resolve chain"""
 
-        self._resolve_opt(self.__qep)
+        if self.__query:
+            self.__qep['Query'] = self.__query
+            for child in self.__qep.get('Plans', []):
+                self._resolve_opt(child)
+            if self.__save:
+                self.__qep['Filename'] = self.store(self.__query, 'scan' if 'Scan' in self.__qep['Node Type'] else '')
+        else:
+            self._resolve_opt(self.__qep)
 
 
     def store(self, query: str, qtype: str) -> str:
