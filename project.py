@@ -2,8 +2,6 @@ import json
 import sys
 from PyQt6.QtWidgets import QApplication
 
-from Database.database import Database
-from explore import QEP, generateTree
 from interface import QueryWindowGUI
 
 def main():
