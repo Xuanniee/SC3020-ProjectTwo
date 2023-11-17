@@ -1,27 +1,40 @@
-## Setup
+### Generality
 
-### TPC-H Setup
+This project was made with generality in mind, therefore, a few assumptions are made:
 
+* Postgres has been properly installed on the user's device
+* The user's preferred database has been created
+* All the tables in the database have been created, and they have been populated with data
+* A postgres superuser with the appropriate credentials exists
+
+
+
+However, to allow user's to use our app with minimal setup, we have provided the raw TPC-H data as well as initialisation of the database and data within the code as well.
+* To use the built-in initialisation features, follow the instructions under `TPC-H setup`
 Install docker, it will come with docker compose CLI.
 
-If its the first time setting up, pull the postgres image using `docker compose create`.
+## Setup
 
-To start the containers, run `docker compose start`, or start manually from the docker dashboard. To stop, run `docker compose stop`, or stop manually from the dashboard.
+### Docker environment
 
-Once the container is running, the database can be initialised by running database.py.
+To create an isolated postgresql instance, the following instructions can be followed to run postgresql in a docker container. However, the data must still be initialised by the user
 
-Alternatively, the Database class can be imported to whicher script it is needed in, and created a Database object will initialise the DB as well.
+* Install docker, it will come with docker compose CLI.
+    + https://www.docker.com/products/docker-desktop/
+* Once docker has been installed, open a terminal at the root folder and run the command `docker compose create`. This will pull the official postgresql image and create a user with both the username and password as "postgres"
+* Once the image has been pulled, start the container using `docker compose start` from the terminal, or manually from the docker dashboard. To stop the container, use `docker compose stop`, or manually through the dashboard as well.
+* Once the container is running, the next steps can be followed.
 
-If it is the first time initialising the DB, the process may take up to 5 minutes due to the large size of the data files.
-
-### Dev Env Setup
+### Env Setup
 
 #### List Python versions installed in your system
 
+Windows
 ```
 py --list
-
+```
 Mac
+```
 python --version
 ```
 
@@ -47,10 +60,16 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### Add newly install packages to requirements.txt
-
+NOTE: If encountering issues with installing the `psycopg2` package, ensure that postgresql v16 is also installed directly on your machine, and run the following commands:
 ```
-pip freeze >> requirements.txt
+pip uninstall psycopg2
+pip uninstall psycopg2-binary
+pip install -r requirements.txt
+```
+
+### Running the app
+
+NOTE: The Database connection parameters in project.py must be modified appropriately, else the app will fail to run.
 ```
 
 #### Deactivate Virtual Env

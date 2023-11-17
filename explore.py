@@ -362,11 +362,3 @@ def generateTree(query=None, qep=None):
         additional['Ranking'] = sorted(ranking.items(), key=lambda x: x[1])
 
         return {'tree': tree, 'additionalInfo': additional}
-
-
-if __name__ == '__main__':
-    qep = db.explainQuery("SELECT * FROM ( SELECT * FROM nation, region WHERE nation.n_regionkey = region.r_regionkey ORDER BY nation.n_nationkey) AS T1, supplier WHERE T1.n_nationkey = supplier.s_nationkey")
-    qep = qep[0][0][0]
-    with QEP(qep['Plan'], save=True) as q:
-        q.resolve()
-    print(generateTree(qep=qep))
