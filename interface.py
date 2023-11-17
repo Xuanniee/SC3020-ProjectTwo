@@ -267,7 +267,11 @@ class NodeInfoDialog(QDialog):
         outRelation = self.nodeData["Filename"]
 
         nodeType = self.nodeData["Node Type"]
-        print(childrenRelation[self.nodeData["NodeID"]])
+        isJoin = 'Join Type' in self.nodeData
+
+        filesNeeded = 2 if isJoin else 1
+
+        files = getInputFiles(self.nodeData['NodeID'], filesNeeded)
 
         # Update the BeforeWindowProps object based on the calculated relations_set
         relations_set = {item.split('.')[0] for item in nodeOutput}
@@ -283,7 +287,10 @@ class NodeInfoDialog(QDialog):
         # self.beforeWindowProps["updated"] = True
 
         # Call the Update Function, thereby passing
-        self.beforeWindowWrapper.updateWindow(first=False, r1Name=["orders"], relation1=DataRetriever().getInterData('_17001997288923678.csv'), relationOut=DataRetriever().getInterData('_17001998061102650.csv'))
+        if isJoin:
+            self.beforeWindowWrapper.updateWindow(first=False, r1Name=['orders'], relation1=DataRetriever().getInterData(files[0]), r2Name=['nation'], relation2=DataRetriever().getInterData(files[1]), relationOut=DataRetriever().getInterData(outRelation))
+        else:
+            self.beforeWindowWrapper.updateWindow(first=False, r1Name=["orders"], relation1=DataRetriever().getInterData(files[0]), relationOut=DataRetriever().getInterData(outRelation))
         
         
 
