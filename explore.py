@@ -1,6 +1,7 @@
 import logging
 import time
 from typing import Any, Callable, Dict
+from collections import defaultdict
 
 from Database.database import Database
 
@@ -299,3 +300,64 @@ class QEP:
         for file in self.__saved:
             os.remove(file)
             logger.info(f'Removed: {file}')
+
+# ==================== QEP Tree formatter ====================
+
+def generateTree(query=None, qep=None):
+        """ 
+        Executes a given query and returns the QEP in the form of a tree dictionary.
+
+        Parameters:
+            (OPTIONAL) query (str): The query to be executed, the method assumes it is a SELECT query.
+            (OPTIONAL) qep (dict): The QEP to format into a tree
+
+            NOTE: Either query or qep must be provided, if both are provided, the query will be ignored.
+        
+        returns the formatted QEP tree for the given query as a dictionary along with additional information about the QEP
+        """
+        if not query and not qep:
+            print('Unable to generate tree, either provide a query or a QEP')
+        
+        if not qep:
+            QEP = db.explainQuery(query)
+            additional = QEP[0][0][0]['Planning']
+            QEP = QEP[0][0][0]['Plan'] 
+        else:
+            additional = qep['Planning']
+            QEP = qep['Plan']
+
+        tree = defaultdict(list)
+        
+        ids = [1]
+        ranking = {}
+
+        def createTree(plans, level, parent):
+            for plan in plans:
+                plan['NodeID'] = ids[0]
+                plan['ParentNodeID'] = parent
+                ids[0] += 1
+                if 'Plans' in plan:
+                    createTree(plan['Plans'], level+1, plan['NodeID'])
+                    del plan['Plans']
+                ranking[(plan['Node Type'], plan['NodeID'])] = float(plan['Total Cost'])
+                tree[level].append(plan)
+        
+        if 'Plans' in QEP:
+            createTree(QEP['Plans'], 1, 0)
+            del QEP['Plans']
+
+        QEP['NodeID'] = 0
+        QEP['ParentNodeID'] = None
+        tree[0].append(QEP)
+
+        additional['Ranking'] = sorted(ranking.items(), key=lambda x: x[1])
+
+        return {'tree': tree, 'additionalInfo': additional}
+
+
+if __name__ == '__main__':
+    qep = db.explainQuery("SELECT * FROM ( SELECT * FROM nation, region WHERE nation.n_regionkey = region.r_regionkey ORDER BY nation.n_nationkey) AS T1, supplier WHERE T1.n_nationkey = supplier.s_nationkey")
+    qep = qep[0][0][0]
+    with QEP(qep['Plan'], save=True) as q:
+        q.resolve()
+    print(generateTree(qep=qep))

@@ -4,6 +4,8 @@ import csv
 import sys
 import os
 
+# ==================== Global vars ====================
+
 filenames = ['region.csv', 'nation.csv', 'part.csv', 'supplier.csv', 'partsupp.csv', 'customer.csv', 'orders.csv', 'lineitem.csv'];
 relations = []
 
@@ -53,9 +55,7 @@ alterOrderTable = 'ALTER TABLE public.orders OWNER to postgres';
 createLineitemTable = 'CREATE TABLE IF NOT EXISTS public.lineitem (l_orderkey integer NOT NULL, l_partkey integer NOT NULL, l_suppkey integer NOT NULL, l_linenumber integer NOT NULL, l_quantity numeric(15,2) NOT NULL, l_extendedprice numeric(15,2) NOT NULL, l_discount numeric(15,2) NOT NULL, l_tax numeric(15,2) NOT NULL, l_returnflag character(1) COLLATE pg_catalog."default" NOT NULL, l_linestatus character(1) COLLATE pg_catalog."default" NOT NULL, l_shipdate date NOT NULL, l_commitdate date NOT NULL, l_receiptdate date NOT NULL, l_shipinstruct character(25) COLLATE pg_catalog."default" NOT NULL, l_shipmode character(10) COLLATE pg_catalog."default" NOT NULL, l_comment character varying(44) COLLATE pg_catalog."default" NOT NULL, CONSTRAINT lineitem_pkey PRIMARY KEY (l_orderkey, l_partkey, l_suppkey, l_linenumber), CONSTRAINT fk_lineitem_orderkey FOREIGN KEY (l_orderkey) REFERENCES public.orders (o_orderkey) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION, CONSTRAINT fk_lineitem_partkey FOREIGN KEY (l_partkey) REFERENCES public.part (p_partkey) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION, CONSTRAINT fk_lineitem_suppkey FOREIGN KEY (l_suppkey) REFERENCES public.supplier MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION) WITH (OIDS = FALSE) TABLESPACE pg_default';
 alterLineitemTable = 'ALTER TABLE public.lineitem OWNER to postgres';
 
-# def getPath():
-#     cwd = os.getcwd()
-#     if os.path.split()
+# ==================== Functions to create and setup database ====================
 
 class Database:
 
@@ -302,53 +302,9 @@ class Database:
             self.cursor.execute(f'SELECT ctid, * FROM {r} WHERE (ctid::text::point)[0]={blockNum}')
             res[r] = [[x[0] for x in self.cursor.description]] + self.cursor.fetchall()
 
-        return res
-    
-    def generateTree(self, query):
-        """ 
-        Executes a given query and returns the QEP in the form of a tree dictionary.
-
-        Parameters:
-            query (str): The query to be executed, the method assumes it is a SELECT query.
-        
-        returns the QEP for the given query as a dictionary
-        """
-
-        tree = defaultdict(list)
-        QEP = self.explainQuery(query)
-        additional = QEP[0][0][0]['Planning']
-        QEP = QEP[0][0][0]['Plan']
-        ids = [1]
-        ranking = {}
-
-        def createTree(plans, level, parent):
-            for plan in plans:
-                plan['NodeID'] = ids[0]
-                plan['ParentNodeID'] = parent
-                ids[0] += 1
-                if 'Plans' in plan:
-                    createTree(plan['Plans'], level+1, plan['NodeID'])
-                    del plan['Plans']
-                ranking[(plan['Node Type'], plan['NodeID'])] = float(plan['Total Cost'])
-                tree[level].append(plan)
-        
-        if 'Plans' in QEP:
-            createTree(QEP['Plans'], 1, 0)
-            del QEP['Plans']
-
-        QEP['NodeID'] = 0
-        QEP['ParentNodeID'] = None
-        tree[0].append(QEP)
-
-        additional['Ranking'] = sorted(ranking.items(), key=lambda x: x[1])
-
-        return {'tree': tree, 'additionalInfo': additional}
-        
+        return res        
 
 
 if __name__ == '__main__':
     db = Database()
-    # print(db.query("SELECT * FROM region"))
-    print(db.getAllTuplesByBlockNumber(['nation', 'region'], 0))
-    # print(db.generateTree("SELECT * FROM ( SELECT * FROM nation, region WHERE nation.n_regionkey = region.r_regionkey ORDER BY nation.n_nationkey) AS T1, supplier WHERE T1.n_nationkey = supplier.s_nationkey"))
     db.closeConnection()
