@@ -73,10 +73,6 @@ def join(op: "JSON"):
         # index scan / index only scan
         join_filter = right.get('Index Cond')
 
-    if not join_filter:
-        import json
-        print(json.dumps(op, indent=2))
-    
     if not right.get('Alias'):
 
         # for joined intermediate results w/o an alias, manually set one as sql syntax requires
@@ -108,11 +104,11 @@ def join(op: "JSON"):
             (
                 {left['Query']}
             ) AS {left['Alias']}
-        {op['Join Type'] if op['Join Type'] not in ['Semi', 'Cross', 'Self', 'Anti'] else ''} JOIN
-            {qright} AS {right['Alias']}
-        ON
-            {join_filter}
     '''
+    if join_filter:
+        query += f'{op["Join Type"] if op["Join Type"] not in ["Semi", "Cross", "Self", "Anti"] else ""} JOIN\n'
+        query += f'{qright} AS {right["Alias"]}\n'
+        query += f'ON {join_filter}\n' if join_filter else ''
     return query
 
 
@@ -276,7 +272,7 @@ class QEP:
         elif _type in ['Seq Scan', 'Index Scan', 'Index Only Scan']:
             scan(op, qep=_qep)
 
-        elif _type == 'Aggregate' and op['Partial Mode'] != 'Partial':
+        elif (_type == 'Aggregate' and op['Partial Mode'] != 'Partial') or _type == 'Group':
             aggregate(op, qep=_qep)
 
         elif _type == 'Sort':
