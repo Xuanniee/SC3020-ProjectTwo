@@ -183,7 +183,7 @@ class SQLQueryWindow(QWidget):
         parsedQepData.update(qepData.get("tree", "N/A"))
         
         # Check if parsedData is None
-        if parsedQepData is "N/A":
+        if parsedQepData == "N/A":
             # TODO Print no tree printed on the screen somehow
             print("No tree should be printed")
 
@@ -467,6 +467,8 @@ class QEPTreeWindow(QGraphicsView):
         currX = x
         currY = y
         firstIter = True
+        # Determine the Total Distance with a multiplier based on the level
+        levelMultiplier = 2
 
         # Iterate starting from the Root of the Tree
         numLevels = len(parsedQepData)
@@ -486,7 +488,7 @@ class QEPTreeWindow(QGraphicsView):
                 if index != 0:
                     # As long as not first iter
                     # Determine the Location of the next Node on the same level, currY is constant on the same level
-                    currX  = currX + NODE_WIDTH + NODE_HORIZONTAL_SPACING
+                    currX  = currX + NODE_WIDTH + (NODE_HORIZONTAL_SPACING * levelMultiplier * level)
 
                 # Create a QGraphicsRectItem for the current node
                 currNode = CustomNode(currX, currY, NODE_WIDTH, NODE_HEIGHT, node, self.beforeWindowWrapper, self.db)
@@ -508,13 +510,10 @@ class QEPTreeWindow(QGraphicsView):
                 currTopY = currY
                 currBotX = currTopX
                 currBotY = currTopY + NODE_HEIGHT
-                # print("Top: ", (currTopX, currTopY))
-                # print("Bot: ", (currBotX, currBotY))
                 self.topDict[currNodeID] = (currTopX, currTopY)
                 self.bottomDict[currNodeID] = (currBotX, currBotY)
 
                 # Draw line connecting parent and child nodes
-                # print(level)
                 if level > 0:
                     # Retrieve Parent Bottom
                     parentNodeID = node["ParentNodeID"]
@@ -530,35 +529,32 @@ class QEPTreeWindow(QGraphicsView):
 
                     # Add the line to the scene
                     scene.addItem(lineItem)
-                    # lineItem = QGraphicsLineItem(parentX, parentY, parentX, parentY + NODE_VERTICAL_SPACING)
-                    # scene.addItem(lineItem)
 
                 # Check if a next level exists
                 if level < numLevels - 1:
                     # Determine the Next Node Position on the Next Level
                     nextLevel = sorted(parsedQepData.keys())[sorted(parsedQepData.keys()).index(level) + 1]
-                    print("Next Level pls: ", nextLevel)
                     nodesListNextLevel = parsedQepData[nextLevel]
                     
                     numNodesNextLevel = len(nodesListNextLevel)
                     
                     if numNodesNextLevel > 1:
                         # If there is more than one node in the current level, calculate the position
-                        # Determine the Total Distance
                         totalHoriDistance = (numNodesOnCurrLevel - 1) * (NODE_WIDTH + NODE_HORIZONTAL_SPACING) + NODE_WIDTH
                         
+                        # Multiply the total horizontal distance by the levelMultiplier
+                        totalHoriDistance *= (levelMultiplier)
+
                         # Get the Center Position of the Current Node and Travel half the horizontal distance to the left
                         currX = currBotX - (totalHoriDistance / 2) - (NODE_WIDTH / 2)
                         
                     else:
                         # If there is only one node in the current level, don't change since it will just be vertical
                         currX = currX
-                    
+
                     # Check if the node has child nodes at the next level
-                    print("currNodeID: ", currNodeID)
-                    print("nodeList: ", nodesListNextLevel)
-                    print()
                     currNode.isLeaf = not self.hasChildrenInNextLevel(currNodeID, nodesListNextLevel)
+
 
                 # Check if the current node is a leaf node
                 if currNode.isLeaf:
@@ -581,7 +577,6 @@ class QEPTreeWindow(QGraphicsView):
                     nodeDesc.setDefaultTextColor(Qt.GlobalColor.black)
                     nodeDesc.setPos(currTopX - (NODE_WIDTH/2), currTopY + NODE_HEIGHT + NODE_VERTICAL_SPACING)
                     scene.addItem(nodeDesc)
-                    print("It going out")
                     
         # Iterate over all the nodes and update bounding rectangle
         boundingRect = None
@@ -590,8 +585,7 @@ class QEPTreeWindow(QGraphicsView):
 
         # Set the scene rectangle to the bounding rectangle
         scene.setSceneRect(boundingRect)
-        print("it's here")
-
+    
     def hasChildrenInNextLevel(self, currNodeID, nodesListNextLevel):
         # Check if the node has children in the next level
         return any(node["ParentNodeID"] == currNodeID for node in nodesListNextLevel)
@@ -599,9 +593,7 @@ class QEPTreeWindow(QGraphicsView):
     def retrieveSimpleNodeInfo(self, nodeData):
         info = f"Node Type: {nodeData.get('Node Type', 'N/A')}\n"
         return info
-
-    
-
+                
 """
 Window 3 - Display the Before of Data Block Visualisations
 """
@@ -885,6 +877,7 @@ class BeforeWindow(QMainWindow):
         #if relation 2 exist
         if r2Name or (len(relation2) >0):
             self.data2 = relation2
+            
             self.table2 = QTableView()
             if r2Name:
                 self._r2Name = r2Name[0]
