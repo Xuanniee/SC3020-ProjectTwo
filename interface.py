@@ -292,7 +292,7 @@ class CustomNode(QGraphicsRectItem):
         self.nodeData = nodeData
         self.beforeWindowWrapper = beforeWindowWrapper
         # Assume it is a Leaf Node until proven otherwise
-        self.isLeaf = True
+        self.isLeaf = False
         self.setAcceptHoverEvents(True)
         self.db = db
 
@@ -562,7 +562,6 @@ class QEPTreeWindow(QGraphicsView):
 
                 # Check if the current node is a leaf node
                 if currNode.isLeaf:
-                    print("It went in")
                     # Get the Relation Name from the leaf node
                     relationName = node.get('Relation Name', 'N/A')
 
