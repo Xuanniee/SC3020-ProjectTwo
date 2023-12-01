@@ -471,7 +471,7 @@ class QEPTreeWindow(QGraphicsView):
         currY = y
         firstIter = True
         # Determine the Total Distance with a multiplier based on the level
-        levelMultiplier = 2
+        levelMultiplier = 2.8
 
         # Iterate starting from the Root of the Tree
         numLevels = len(parsedQepData)
@@ -491,7 +491,7 @@ class QEPTreeWindow(QGraphicsView):
                 if index != 0:
                     # As long as not first iter
                     # Determine the Location of the next Node on the same level, currY is constant on the same level
-                    currX  = currX + NODE_WIDTH + (NODE_HORIZONTAL_SPACING * levelMultiplier * level)
+                    currX  = currX + NODE_WIDTH + (NODE_HORIZONTAL_SPACING * levelMultiplier * level) + (2.1 * NODE_WIDTH)
 
                 # Create a QGraphicsRectItem for the current node
                 currNode = CustomNode(currX, currY, NODE_WIDTH, NODE_HEIGHT, node, self.beforeWindowWrapper, self.db)
@@ -553,7 +553,7 @@ class QEPTreeWindow(QGraphicsView):
                         
                     else:
                         # If there is only one node in the current level, don't change since it will just be vertical
-                        currX = currX
+                        currX = currX - NODE_WIDTH
 
                     # Check if the node has child nodes at the next level
                     currNode.isLeaf = not self.hasChildrenInNextLevel(currNodeID, nodesListNextLevel)
